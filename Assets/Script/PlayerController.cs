@@ -12,7 +12,6 @@ public class PlayerController : CreatureController
     private int _movePacketCnt = 0;
     private Text _text;
 
-
     IEnumerator movePacketCount() 
     {
         while (true) 
