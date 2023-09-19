@@ -13,17 +13,17 @@ public class SceneManager : MonoBehaviour
         network.name = "Network";
         network.AddComponent<Network>();
 
-        for (int z = 0; z <= 256; z++)
-        {
-            for (int x = 0; x <= 256; x++)
-            {
-                if (z % 32 == 0 || x % 32 == 0) 
-                {
-                    GameObject wallPrefab = Resources.Load<GameObject>($"Prefabs/WALL");
-                    GameObject wallgo = Object.Instantiate(wallPrefab);
-                    wallgo.transform.position = new Vector3(x, 0, z);
-                }
-            }
-        }
+        //for (int z = 0; z <= 256; z++)
+        //{
+        //    for (int x = 0; x <= 256; x++)
+        //    {
+        //        if (z % 32 == 0 || x % 32 == 0) 
+        //        {
+        //            GameObject wallPrefab = Resources.Load<GameObject>($"Prefabs/WALL");
+        //            GameObject wallgo = Object.Instantiate(wallPrefab);
+        //            wallgo.transform.position = new Vector3(x, 0, z);
+        //        }
+        //    }
+        //}
     }
 }
