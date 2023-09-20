@@ -29,7 +29,8 @@ public class Type
     public enum State : UInt16 
     {
         IDLE,
-        MOVE
+        MOVE,
+        ATTACK
     }
 
     public enum Dir : UInt16

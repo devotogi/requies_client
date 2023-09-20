@@ -89,10 +89,15 @@ public class CreatureController : MonoBehaviour
             case Type.State.MOVE:
                 UpdateMove();
                 break;
+
+            case Type.State.ATTACK:
+                UpdateAttack();
+                break;
         }
     }
 
     public virtual void UpdateIdel() { }
+    public virtual void UpdateAttack() { }
 
     public virtual void UpdateMove()
     {

@@ -43,6 +43,15 @@ public class PlayerController : CreatureController
             return;
         }
 
+        if (_state == Type.State.ATTACK)
+            return;
+
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            _state = Type.State.ATTACK;
+            StartCoroutine(CoAttack());
+            return;
+        }
 
         if (Input.GetMouseButtonUp(0))
         {
@@ -74,7 +83,6 @@ public class PlayerController : CreatureController
             _dir = Type.Dir.NONE;
             _state = Type.State.IDLE;
         }
-
 
         if (Input.GetMouseButton(0))
         {
@@ -124,6 +132,12 @@ public class PlayerController : CreatureController
             _state = Type.State.MOVE;
         }
     }
+
+    public override void UpdateAttack() 
+    {
+        int a = 3;
+    }
+
     public override void UpdateIdel()
     {
         if (_mouseDir != Type.Dir.NONE)
@@ -225,11 +239,15 @@ public class PlayerController : CreatureController
         switch (_state) 
         {
             case Type.State.IDLE:
-                _animator.Play("idle1");
+                _animator.Play("knight_idle");
                 break;
 
             case Type.State.MOVE:
-                _animator.Play("run");
+                _animator.Play("knight_run");
+                break;
+
+            case Type.State.ATTACK:
+                _animator.Play("knight_attack");
                 break;
         }
     }
@@ -285,5 +303,12 @@ public class PlayerController : CreatureController
         bw.Write((float)_cameraLocalRotation.w); // 4
 
         _network.SendPacket(bytes, 42);
+    }
+
+    IEnumerator CoAttack() 
+    {
+        yield return new WaitForSeconds(1.5f);
+        _state = Type.State.IDLE;
+        _dir = Type.Dir.NONE;
     }
 }
