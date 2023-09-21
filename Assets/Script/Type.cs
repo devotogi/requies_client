@@ -19,9 +19,10 @@ public class Type
         S2C_LATENCY,
         C2S_MAPSYNC,
         S2C_MAPSYNC,
-
         S2C_PLAYERNEW,
         S2C_PLAYERDESTORY,
+        C2S_PLAYERATTACK,
+        S2C_PLAYERATTACKED,
     }
     public static string IP { get { return "58.236.86.23"; } }
     public static int PORT { get { return 30002; } }

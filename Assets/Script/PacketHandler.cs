@@ -48,6 +48,28 @@ public class PacketHandler
             case Type.PacketProtocol.S2C_PLAYERREMOVELIST:
                 PacketHandler_PLAYERREMOVELIST(dataPtr, dataSize);
                 break;
+
+            case Type.PacketProtocol.S2C_PLAYERATTACKED:
+                PacketHandler_S2C_PLAYERATTACKED(dataPtr, dataSize);
+                break;
+        }
+    }
+
+    private void PacketHandler_S2C_PLAYERATTACKED(ArraySegment<byte> dataPtr, int dataSize)
+    {
+        MemoryStream ms = new MemoryStream(dataPtr.Array, dataPtr.Offset, dataPtr.Count);
+        BinaryReader br = new BinaryReader(ms);
+
+        Int32 attackedPlayerId = br.ReadInt32();
+
+        if (playerController.PlayerID == attackedPlayerId)
+        {
+            playerController.Attacked();
+        }
+        else
+        {
+            creatureDic.TryGetValue(attackedPlayerId, out var opc);
+            opc.Attacked();
         }
     }
 

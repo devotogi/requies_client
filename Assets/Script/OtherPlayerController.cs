@@ -110,12 +110,22 @@ public class OtherPlayerController : CreatureController
         switch (_state)
         {
             case Type.State.IDLE:
-                _animator.Play("idle1");
+                _animator.Play("knight_idle");
                 break;
 
             case Type.State.MOVE:
-                _animator.Play("run");
+                _animator.Play("knight_run");
+                break;
+
+            case Type.State.ATTACK:
+                Debug.DrawRay(transform.position + Vector3.up, transform.TransformDirection(Vector3.forward) * 2, Color.red);
+                _animator.Play("knight_attack");
                 break;
         }
+    }
+
+    public override void Attacked()
+    {
+        base.Attacked();
     }
 }

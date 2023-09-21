@@ -11,6 +11,7 @@ public class PlayerController : CreatureController
     private float _xRotateMove;
     private int _movePacketCnt = 0;
     private Text _text;
+    bool _attackEnd = false;
 
     IEnumerator movePacketCount() 
     {
@@ -36,7 +37,6 @@ public class PlayerController : CreatureController
     {
         if (_movePacketCnt > 8)
         {
-            //Debug.Log("Man Key Input Lock!");
             _dir = Type.Dir.NONE;
             _state = Type.State.IDLE;
             _mouseDir = Type.Dir.NONE;
@@ -135,7 +135,12 @@ public class PlayerController : CreatureController
 
     public override void UpdateAttack() 
     {
-        int a = 3;
+        if (_attackEnd) 
+        {
+            _state = Type.State.IDLE;
+            _dir = Type.Dir.NONE;
+            _attackEnd = false;
+        }
     }
 
     public override void UpdateIdel()
@@ -247,6 +252,7 @@ public class PlayerController : CreatureController
                 break;
 
             case Type.State.ATTACK:
+                Debug.DrawRay(transform.position + Vector3.up, transform.TransformDirection(Vector3.forward) * 2, Color.red);
                 _animator.Play("knight_attack");
                 break;
         }
@@ -307,8 +313,33 @@ public class PlayerController : CreatureController
 
     IEnumerator CoAttack() 
     {
+        yield return new WaitForSeconds(0.19f);
+        RaycastHit hit;
+        if (Physics.Raycast(transform.position + Vector3.up, transform.TransformDirection(Vector3.forward), out hit, 2))
+        {
+            Debug.Log("Ray Cast");
+            int otherPlayerId = hit.transform.gameObject.GetComponent<OtherPlayerController>().PlayerID;
+            Attack(otherPlayerId);
+        }
         yield return new WaitForSeconds(1.5f);
-        _state = Type.State.IDLE;
-        _dir = Type.Dir.NONE;
+        _attackEnd = true;
+    }
+
+    private void Attack(int otherPlayerId) 
+    {
+        byte[] bytes = new byte[13];
+        MemoryStream ms = new MemoryStream(bytes);
+        ms.Position = 0;
+
+        BinaryWriter bw = new BinaryWriter(ms);
+        bw.Write((Int16)Type.PacketProtocol.C2S_PLAYERATTACK);
+        bw.Write((Int16)8);
+        bw.Write((Int64)otherPlayerId);
+
+        _network.SendPacket(bytes, 8);
+    }
+    public override void Attacked()
+    {
+        base.Attacked();
     }
 }

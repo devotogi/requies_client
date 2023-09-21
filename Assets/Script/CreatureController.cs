@@ -15,8 +15,6 @@ public class CreatureController : MonoBehaviour
     protected Quaternion _prevCameraLocalRotation;
     protected Vector3 _dirVector3 = Vector3.zero;
     protected GameObject _camera;
-
-
     void OnDestroy()
     {
         if (_camera != null)
@@ -112,6 +110,10 @@ public class CreatureController : MonoBehaviour
     public virtual void SendSyncPlayer() { }
 
     public virtual void SendSyncMap() { }
+    public virtual void Attacked() 
+    {
+        Debug.Log($"{PlayerID} 피격 받음 ");
+    }
 
     public void Destory() 
     {
