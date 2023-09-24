@@ -5,7 +5,7 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class PlayerController : CreatureController
+public class PlayerController : PlayerAbleController
 {
     private float _rotateSpeed = 200.0f;
     private float _xRotateMove;
@@ -317,7 +317,6 @@ public class PlayerController : CreatureController
         RaycastHit hit;
         if (Physics.Raycast(transform.position + Vector3.up, transform.TransformDirection(Vector3.forward), out hit, 2))
         {
-            Debug.Log("Ray Cast");
             int otherPlayerId = hit.transform.gameObject.GetComponent<OtherPlayerController>().PlayerID;
             Attack(otherPlayerId);
         }

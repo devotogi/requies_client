@@ -7,8 +7,6 @@ using Object = UnityEngine.Object;
 
 public class PacketHandler
 {
-    Dictionary<int, CreatureController> creatureDic = new Dictionary<int, CreatureController>();
-    PlayerController playerController = null;
     internal void Handler(ArraySegment<byte> segment)
     {
         ArraySegment<byte> pktCodeByte = new ArraySegment<byte>(segment.Array, 0, sizeof(Int16)); // 2byte 타입 추출
@@ -62,13 +60,13 @@ public class PacketHandler
 
         Int32 attackedPlayerId = br.ReadInt32();
 
-        if (playerController.PlayerID == attackedPlayerId)
+        if (Managers.Data.PlayerController.PlayerID == attackedPlayerId)
         {
-            playerController.Attacked();
+            Managers.Data.PlayerController.Attacked();
         }
         else
         {
-            creatureDic.TryGetValue(attackedPlayerId, out var opc);
+            Managers.Data.PlayerAbleDic.TryGetValue(attackedPlayerId, out var opc);
             opc.Attacked();
         }
     }
@@ -83,11 +81,11 @@ public class PacketHandler
         {
             int playerId = br.ReadInt32();
 
-            if (playerId == playerController.PlayerID)
+            if (playerId == Managers.Data.PlayerController.PlayerID)
                 continue;
 
-            creatureDic.TryGetValue(playerId, out var opc);
-            creatureDic.Remove(playerId);
+            Managers.Data.PlayerAbleDic.TryGetValue(playerId, out var opc);
+            Managers.Data.PlayerAbleDic.Remove(playerId);
             opc.Destory();
         }
     }
@@ -98,8 +96,8 @@ public class PacketHandler
         BinaryReader br = new BinaryReader(ms);
 
         int playerId = br.ReadInt32();
-        creatureDic.TryGetValue(playerId, out var opc);
-        creatureDic.Remove(playerId);
+        Managers.Data.PlayerAbleDic.TryGetValue(playerId, out var opc);
+        Managers.Data.PlayerAbleDic.Remove(playerId);
         opc.Destory();
     }
 
@@ -110,7 +108,7 @@ public class PacketHandler
 
         Int32 playerId = br.ReadInt32();
 
-        if (playerId == playerController.PlayerID)
+        if (playerId == Managers.Data.PlayerController.PlayerID)
         {
             return;
         }
@@ -130,17 +128,15 @@ public class PacketHandler
             float qw = br.ReadSingle();
             Quaternion quaternion = new Quaternion(qx, qy, qz, qw);
 
-            GameObject prefab = Resources.Load<GameObject>($"Prefabs/Player");
-            GameObject playerGo = Object.Instantiate(prefab);
+            GameObject playerGo = Managers.Resource.Instantiate("Player/Knight");
             playerGo.name = $"otherPlayer{playerId}";
 
             OtherPlayerController opc = playerGo.AddComponent<OtherPlayerController>();
             opc.PlayerID = playerId;
 
-            creatureDic.Add(opc.PlayerID, opc);
+            Managers.Data.PlayerAbleDic.Add(opc.PlayerID, opc);
 
-            GameObject cameraPrefab = Resources.Load<GameObject>($"Prefabs/FakeCameraPos");
-            GameObject cameraPosGo = Object.Instantiate(cameraPrefab);
+            GameObject cameraPosGo = Managers.Resource.Instantiate("Camera/FakeCameraPos");
             cameraPosGo.GetComponent<FakeCameraPos>().Init(playerGo);
             opc.Init(quaternion, cameraPosGo.transform.GetChild(0).gameObject);
             opc.UpdateSync(state, dir, mouseDir, nowPos, quaternion);
@@ -159,8 +155,8 @@ public class PacketHandler
         int playerId = br.ReadInt32();
         try
         {
-            creatureDic.TryGetValue(playerId, out var opc);
-            creatureDic.Remove(playerId);
+            Managers.Data.PlayerAbleDic.TryGetValue(playerId, out var opc);
+            Managers.Data.PlayerAbleDic.Remove(playerId);
             opc.Destory();
         }
         catch (Exception e) {
@@ -187,19 +183,17 @@ public class PacketHandler
         float qw = br.ReadSingle();
         Quaternion cameraLocalRotation = new Quaternion(qx,qy,qz,qw);
 
-        GameObject prefab = Resources.Load<GameObject>($"Prefabs/Player");
-        GameObject playerGo = Object.Instantiate(prefab);
+        GameObject playerGo = Managers.Resource.Instantiate("Player/Knight");
         // TODO 다른 플레이어
         playerGo.name = $"otherPlayer{playerId}";
 
         OtherPlayerController opc = playerGo.AddComponent<OtherPlayerController>();
         opc.PlayerID = playerId;
+        GameObject cameraPosGo = Managers.Resource.Instantiate("Camera/FakeCameraPos");
 
-        GameObject cameraPrefab = Resources.Load<GameObject>($"Prefabs/FakeCameraPos");
-        GameObject cameraPosGo = Object.Instantiate(cameraPrefab);
         cameraPosGo.GetComponent<FakeCameraPos>().Init(playerGo);
 
-        creatureDic.Add(opc.PlayerID, opc);
+        Managers.Data.PlayerAbleDic.Add(opc.PlayerID, opc);
         opc.Init(cameraLocalRotation, cameraPosGo.transform.GetChild(0).gameObject);
         opc.UpdateSync(state, dir, mouseDir, startPos, cameraLocalRotation);
     }
@@ -226,11 +220,10 @@ public class PacketHandler
             float qw = br.ReadSingle();
             Quaternion cameraLocalRotation = new Quaternion(qx, qy, qz, qw);
 
-            if (playerId == playerController.PlayerID)
+            if (playerId == Managers.Data.PlayerController.PlayerID)
                 continue;
 
-            GameObject prefab = Resources.Load<GameObject>($"Prefabs/Player");
-            GameObject playerGo = Object.Instantiate(prefab);
+            GameObject playerGo = Managers.Resource.Instantiate("Player/Knight");
             // TODO 다른 플레이어
             playerGo.name = $"otherPlayer{playerId}";
             
@@ -238,14 +231,14 @@ public class PacketHandler
             opc.PlayerID = playerId;
             try
             {
-                creatureDic.Add(opc.PlayerID, opc);
+                Managers.Data.PlayerAbleDic.Add(opc.PlayerID, opc);
             }
             catch (Exception e) {
                 Debug.LogException(e);
             }
 
-            GameObject cameraPrefab = Resources.Load<GameObject>($"Prefabs/FakeCameraPos");
-            GameObject cameraPosGo = Object.Instantiate(cameraPrefab);
+            GameObject cameraPosGo = Managers.Resource.Instantiate("Camera/FakeCameraPos");
+
             cameraPosGo.GetComponent<FakeCameraPos>().Init(playerGo);
             opc.Init(cameraLocalRotation, cameraPosGo.transform.GetChild(0).gameObject);
 
@@ -261,7 +254,7 @@ public class PacketHandler
 
         Int32 playerId = br.ReadInt32();
 
-        if (playerId == playerController.PlayerID)
+        if (playerId == Managers.Data.PlayerController.PlayerID)
         {
             return;
         }
@@ -281,7 +274,7 @@ public class PacketHandler
             float qw = br.ReadSingle();
             Quaternion quaternion = new Quaternion(qx, qy, qz, qw);
 
-            creatureDic.TryGetValue(playerId, out var opc);
+            Managers.Data.PlayerAbleDic.TryGetValue(playerId, out var opc);
             if (opc != null)
                 opc.UpdateSync(state, dir, mouseDir, nowPos, quaternion);
         }
@@ -310,22 +303,17 @@ public class PacketHandler
         float qz = br.ReadSingle();
         float qw = br.ReadSingle();
         Quaternion quaternion = new Quaternion(qx, qy, qz, qw);
-
-        GameObject prefab = Resources.Load<GameObject>($"Prefabs/Player");
-        GameObject playerGo = Object.Instantiate(prefab);
-
+        GameObject playerGo = Managers.Resource.Instantiate("Player/Knight");
         playerGo.name = "player";
         playerGo.tag = "player";
         PlayerController pc = playerGo.AddComponent<PlayerController>();
         pc.transform.position = new Vector3(x, y, z);
         pc.PlayerID = playerId;
        
-        playerController = pc;
-        creatureDic.Add(pc.PlayerID, pc);
+        Managers.Data.PlayerController = pc;
+        Managers.Data.PlayerAbleDic.Add(pc.PlayerID, pc);
 
-        GameObject cameraPrefab = Resources.Load<GameObject>($"Prefabs/CameraPos");
-        GameObject cameraPosGo = Object.Instantiate(cameraPrefab);
-
+        GameObject cameraPosGo = Managers.Resource.Instantiate("Camera/CameraPos");
         cameraPosGo.GetComponent<CameraPos>().Init(playerGo);
         cameraPosGo.transform.GetChild(0).gameObject.AddComponent<CameraController>().Init(playerGo);
         pc.Init(quaternion, cameraPosGo.transform.GetChild(0).gameObject);

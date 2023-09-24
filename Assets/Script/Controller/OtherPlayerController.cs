@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class OtherPlayerController : CreatureController
+public class OtherPlayerController : PlayerAbleController
 {
     private float _xRotateMove;
     private float _rotateSpeed = 200.0f;

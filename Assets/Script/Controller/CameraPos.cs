@@ -10,7 +10,6 @@ public class CameraPos : MonoBehaviour
     {
         _player = player;
         _delta = new Vector3(0.0f, 7.09412f, -12.00805f);
-
     }
 
     private void Update()

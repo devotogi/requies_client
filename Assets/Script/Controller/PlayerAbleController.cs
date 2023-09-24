@@ -2,19 +2,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CreatureController : MonoBehaviour
+public class PlayerAbleController : CreatureController
 {
     public int PlayerID { get; set; }
-    protected Type.Dir _dir = Type.Dir.NONE;
-    protected Type.Dir _mouseDir = Type.Dir.NONE;
-    protected Type.State _state = Type.State.IDLE;
-    protected Animator _animator;
     protected float _speed = 3.0f;
     protected Network _network;
     protected Quaternion _cameraLocalRotation;
     protected Quaternion _prevCameraLocalRotation;
     protected Vector3 _dirVector3 = Vector3.zero;
     protected GameObject _camera;
+    protected Type.Dir _mouseDir = Type.Dir.NONE;
+
     void OnDestroy()
     {
         if (_camera != null)
@@ -110,13 +108,15 @@ public class CreatureController : MonoBehaviour
     public virtual void SendSyncPlayer() { }
 
     public virtual void SendSyncMap() { }
-    public virtual void Attacked() 
+
+    public override void Attacked()
     {
-        Debug.Log($"{PlayerID} 피격 받음 ");
+        Debug.Log($"{PlayerID} 피격당함!!");
+        base.Attacked();
     }
 
-    public void Destory() 
+    public override void Destory()
     {
-        Destroy(gameObject);
+        base.Destory();
     }
 }
