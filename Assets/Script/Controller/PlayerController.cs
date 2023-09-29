@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.UI;
 
 public class PlayerController : PlayerAbleController
@@ -42,6 +43,23 @@ public class PlayerController : PlayerAbleController
             _mouseDir = Type.Dir.NONE;
             return;
         }
+
+        //if (Input.GetMouseButtonUp(1))
+        //{
+        //    RaycastHit hit;
+        //    Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+        //    //레이캐스트 충돌 발생 시
+        //    if (Physics.Raycast(ray, out hit, 100.0f))
+        //    {
+        //        //충돌한 오브젝트를 태그로 구분해서 OK일 경우
+        //        agent.SetDestination(hit.point);
+
+        //        _state = Type.State.CLICK_MOVE;
+        //    }
+
+        //    return;
+        //}
 
         if (_state == Type.State.ATTACK)
             return;
@@ -260,13 +278,13 @@ public class PlayerController : PlayerAbleController
 
     public override void SendSyncPlayer() 
     {
-        byte[] bytes = new byte[42];
+        byte[] bytes = new byte[54];
         MemoryStream ms = new MemoryStream(bytes);
         ms.Position = 0;
 
         BinaryWriter bw = new BinaryWriter(ms);
         bw.Write((Int16)Type.PacketProtocol.C2S_PLAYERSYNC);
-        bw.Write((Int16)42);
+        bw.Write((Int16)54);
         bw.Write((Int32)PlayerID);
         bw.Write((UInt16)_state); // 2
         bw.Write((UInt16)_dir); // 2
@@ -280,27 +298,31 @@ public class PlayerController : PlayerAbleController
         bw.Write((float)_cameraLocalRotation.y); // 4
         bw.Write((float)_cameraLocalRotation.z); // 4
         bw.Write((float)_cameraLocalRotation.w); // 4
-        
-        _network.SendPacket(bytes, 42);
+
+        bw.Write((float)_target.x); // 4
+        bw.Write((float)_target.y); // 4
+        bw.Write((float)_target.z); // 4
+
+        _network.SendPacket(bytes, 54);
         _movePacketCnt++;
     }
 
     public override void SendSyncMap() 
     {
-        byte[] bytes = new byte[42];
+        byte[] bytes = new byte[54];
         MemoryStream ms = new MemoryStream(bytes);
         ms.Position = 0;
 
         BinaryWriter bw = new BinaryWriter(ms);
         bw.Write((Int16)Type.PacketProtocol.C2S_MAPSYNC);
-        bw.Write((Int16)42);
+        bw.Write((Int16)54);
         bw.Write((Int32)PlayerID);
         bw.Write((UInt16)_state); // 2
         bw.Write((UInt16)_dir); // 2
         bw.Write((UInt16)_mouseDir); // 2
 
         bw.Write((float)transform.position.x); // 4
-        bw.Write((float)transform.position.y); // 4 
+        bw.Write((float)transform.position.y); // 4
         bw.Write((float)transform.position.z); // 4
 
         bw.Write((float)_cameraLocalRotation.x); // 4
@@ -308,7 +330,11 @@ public class PlayerController : PlayerAbleController
         bw.Write((float)_cameraLocalRotation.z); // 4
         bw.Write((float)_cameraLocalRotation.w); // 4
 
-        _network.SendPacket(bytes, 42);
+        bw.Write((float)_target.x); // 4
+        bw.Write((float)_target.y); // 4
+        bw.Write((float)_target.z); // 4
+
+        _network.SendPacket(bytes, 54);
     }
 
     IEnumerator CoAttack() 
@@ -340,5 +366,90 @@ public class PlayerController : PlayerAbleController
     public override void Attacked()
     {
         base.Attacked();
+    }
+
+    public override void UpdateInput_MousePos() 
+    {
+        if (_movePacketCnt > 8)
+        {
+            _dir = Type.Dir.NONE;
+            _state = Type.State.IDLE;
+            _mouseDir = Type.Dir.NONE;
+            return;
+        }
+
+        if (Input.GetMouseButtonUp(0))
+        {
+            _mouseDir = Type.Dir.NONE;
+        }
+
+        if (Input.GetMouseButton(0))
+        {
+            _prevCameraLocalRotation = _cameraLocalRotation;
+
+            _xRotateMove = Input.GetAxis("Mouse X"); /** Time.deltaTime * _rotateSpeed;*/
+
+            if (_xRotateMove < 0)
+            {
+                _mouseDir = Type.Dir.LEFT;
+            }
+            else if (_xRotateMove > 0)
+            {
+                _mouseDir = Type.Dir.RIGHT;
+            }
+        }
+
+
+        if (Input.GetMouseButtonUp(1))
+        {
+            RaycastHit hit;
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+            //레이캐스트 충돌 발생 시
+            if (Physics.Raycast(ray, out hit, 100.0f))
+            {
+                //충돌한 오브젝트를 태그로 구분해서 OK일 경우
+                _target = hit.point;
+                _agent.enabled = true;
+                _agent.SetDestination(_target);
+                _state = Type.State.MOVE;
+            }
+
+            return;
+        }
+    }
+
+    public override void UpdateIdel_MousePos() 
+    {
+        if (_mouseDir != Type.Dir.NONE)
+        {
+            _xRotateMove = _mouseDir == Type.Dir.LEFT ? -1 : 1;
+
+            _xRotateMove = _xRotateMove * Time.deltaTime * _rotateSpeed;
+
+            _camera.transform.RotateAround(transform.position, Vector3.up, _xRotateMove);
+
+            _cameraLocalRotation = _camera.transform.localRotation;
+        }
+    }
+
+    public override void UpdateMove_MousePos() 
+    {
+        if (_mouseDir != Type.Dir.NONE)
+        {
+            _xRotateMove = _mouseDir == Type.Dir.LEFT ? -1 : 1;
+
+            _xRotateMove = _xRotateMove * Time.deltaTime * _rotateSpeed;
+
+            _camera.transform.RotateAround(transform.position, Vector3.up, _xRotateMove);
+
+            _cameraLocalRotation = _camera.transform.localRotation;
+        }
+
+        if (_agent.velocity.sqrMagnitude >= 0.2f * 0.2f && _agent.remainingDistance <= 0.1f)
+        {
+            _state = Type.State.IDLE;
+            _agent.enabled = false;
+        }
     }
 }

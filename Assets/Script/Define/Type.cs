@@ -27,11 +27,12 @@ public class Type
     public static string IP { get { return "58.236.86.23"; } }
     public static int PORT { get { return 30002; } }
 
-    public enum State : UInt16 
+    public enum State : UInt16
     {
         IDLE,
         MOVE,
-        ATTACK
+        ATTACK,
+        CLICK_MOVE,
     }
 
     public enum Dir : UInt16
@@ -45,6 +46,12 @@ public class Type
         RIGHTDOWN = 12,
         LEFTDOWN = 24,
         LEFTUP = 18,
+    }
+
+    public enum MoveType : Int32
+    {
+        KeyBoard,
+        Mouse
     }
 }
 

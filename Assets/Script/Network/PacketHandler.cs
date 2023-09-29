@@ -127,6 +127,10 @@ public class PacketHandler
             float qz = br.ReadSingle();
             float qw = br.ReadSingle();
             Quaternion quaternion = new Quaternion(qx, qy, qz, qw);
+            float tx = br.ReadSingle();
+            float ty = br.ReadSingle();
+            float tz = br.ReadSingle();
+            Vector3 target = new Vector3(tx, ty, tz);
 
             GameObject playerGo = Managers.Resource.Instantiate("Player/Knight");
             playerGo.name = $"otherPlayer{playerId}";
@@ -139,7 +143,7 @@ public class PacketHandler
             GameObject cameraPosGo = Managers.Resource.Instantiate("Camera/FakeCameraPos");
             cameraPosGo.GetComponent<FakeCameraPos>().Init(playerGo);
             opc.Init(quaternion, cameraPosGo.transform.GetChild(0).gameObject);
-            opc.UpdateSync(state, dir, mouseDir, nowPos, quaternion);
+            opc.UpdateSync(state, dir, mouseDir, nowPos, quaternion, target);
         }
         catch (Exception e)
         {
@@ -195,7 +199,7 @@ public class PacketHandler
 
         Managers.Data.PlayerAbleDic.Add(opc.PlayerID, opc);
         opc.Init(cameraLocalRotation, cameraPosGo.transform.GetChild(0).gameObject);
-        opc.UpdateSync(state, dir, mouseDir, startPos, cameraLocalRotation);
+        // opc.UpdateSync(state, dir, mouseDir, startPos, cameraLocalRotation);
     }
 
     private void PacketHandler_S2C_PLAYERLIST(ArraySegment<byte> dataPtr, int dataSize)
@@ -219,6 +223,10 @@ public class PacketHandler
             float qz = br.ReadSingle();
             float qw = br.ReadSingle();
             Quaternion cameraLocalRotation = new Quaternion(qx, qy, qz, qw);
+            float tx = br.ReadSingle();
+            float ty = br.ReadSingle();
+            float tz = br.ReadSingle();
+            Vector3 target = new Vector3(tx, ty, tz);
 
             if (playerId == Managers.Data.PlayerController.PlayerID)
                 continue;
@@ -242,7 +250,7 @@ public class PacketHandler
             cameraPosGo.GetComponent<FakeCameraPos>().Init(playerGo);
             opc.Init(cameraLocalRotation, cameraPosGo.transform.GetChild(0).gameObject);
 
-            opc.UpdateSync(state, dir, mouseDir,startPos, cameraLocalRotation);
+            opc.UpdateSync(state, dir, mouseDir,startPos, cameraLocalRotation, target);
         }
     }
 
@@ -273,10 +281,14 @@ public class PacketHandler
             float qz = br.ReadSingle();
             float qw = br.ReadSingle();
             Quaternion quaternion = new Quaternion(qx, qy, qz, qw);
+            float tx = br.ReadSingle();
+            float ty = br.ReadSingle();
+            float tz = br.ReadSingle();
+            Vector3 target = new Vector3(tx, ty, tz);
 
             Managers.Data.PlayerAbleDic.TryGetValue(playerId, out var opc);
             if (opc != null)
-                opc.UpdateSync(state, dir, mouseDir, nowPos, quaternion);
+                opc.UpdateSync(state, dir, mouseDir, nowPos, quaternion,target);
         }
         catch (Exception e)
         {
@@ -301,11 +313,10 @@ public class PacketHandler
         float qx = br.ReadSingle();
         float qy = br.ReadSingle();
         float qz = br.ReadSingle();
-        float qw = br.ReadSingle();
+        float qw = br.ReadSingle(); 
         Quaternion quaternion = new Quaternion(qx, qy, qz, qw);
         GameObject playerGo = Managers.Resource.Instantiate("Player/Knight");
         playerGo.name = "player";
-        playerGo.tag = "player";
         PlayerController pc = playerGo.AddComponent<PlayerController>();
         pc.transform.position = new Vector3(x, y, z);
         pc.PlayerID = playerId;

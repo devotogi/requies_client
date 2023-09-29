@@ -7,11 +7,34 @@ public class OtherPlayerController : PlayerAbleController
     private float _xRotateMove;
     private float _rotateSpeed = 200.0f;
 
+    public void Awake()
+    {
+        Debug.Log($"my pos {transform.position.x}, {transform.position.y}, {transform.position.z}");
+    }
+
     public void Init(Quaternion quaternion, GameObject camera)
     {
         _camera = camera;
         _cameraLocalRotation = quaternion;
     }
+
+    public override void UpdateIdel_MousePos()
+    {
+      
+    }
+
+    public override void UpdateMove_MousePos()
+    {
+        _agent.enabled = true;
+        _agent.SetDestination(_target);
+
+        if (_agent.velocity.sqrMagnitude >= 0.2f * 0.2f && _agent.remainingDistance <= 0.1f)
+        {
+            _agent.enabled = false;
+            _state = Type.State.IDLE;
+        }
+    }
+
     public override void UpdateIdel() 
     {
         if (_camera != null && _mouseDir != Type.Dir.NONE)
