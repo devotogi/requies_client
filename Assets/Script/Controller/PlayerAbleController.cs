@@ -19,7 +19,14 @@ public class PlayerAbleController : CreatureController
     [SerializeField]
     protected Vector3 _prevDir = Vector3.zero;
     protected UnityEngine.AI.NavMeshAgent _agent;
-    Vector3 mousePrevPos = Vector3.zero;
+    protected Vector3 mousePrevPos = Vector3.zero;
+
+    protected Vector3 prevEulerAngles = Vector3.zero;
+    protected Vector3 nowEulerAngles = Vector3.zero;
+    protected Vector3 _lookrotation = Vector3.zero;
+
+    protected Quaternion _localRotation;
+
     void OnDestroy()
     {
         if (_camera != null)
@@ -34,7 +41,8 @@ public class PlayerAbleController : CreatureController
         _animator = GetComponent<Animator>();
         _network = FindObjectOfType<Network>();
         _agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
-        _agent.enabled = false;
+        _agent.updateRotation = false;
+        _agent.enabled = true;
     }
 
     // Update is called once per frame
@@ -52,7 +60,7 @@ public class PlayerAbleController : CreatureController
         }
     }
 
-    public void UpdateSync(Type.State state, Type.Dir dir, Type.Dir mouseDir, Vector3 nowPos, Quaternion quaternion, Vector3 target) 
+    public void UpdateSync(Type.State state, Type.Dir dir, Type.Dir mouseDir, Vector3 nowPos, Quaternion quaternion, Vector3 target, Quaternion localRtation, Vector3 lookRotation) 
     {
         _mouseDir = mouseDir;
         _state = state;
@@ -60,7 +68,17 @@ public class PlayerAbleController : CreatureController
         transform.position = new Vector3(nowPos.x, nowPos.y, nowPos.z);
         _cameraLocalRotation = quaternion;
         _camera.transform.localRotation = _cameraLocalRotation;
+        prevEulerAngles = target;
         _target = target;
+        _localRotation = localRtation;
+        _lookrotation = lookRotation;
+
+        if (_state == Type.State.MOVE)
+        {
+            Vector3 dest = new Vector3(_target.x, transform.position.y, _target.z);
+            transform.LookAt(dest);
+        }
+        // Quaternion.Euler(eulerAngle.x, eulerAngle.y, eulerAngle.z);
     }
     void UpdateKeyboardMove() 
     {
@@ -93,9 +111,10 @@ public class PlayerAbleController : CreatureController
 
     void UpdateMouseMove() 
     {
-        Vector3 prevPos = transform.position;
         Type.State prevState = _state;
         Vector3 prevTarget = _target;
+        Vector3 prevDir = _prevDir;
+        Vector3 prevEulerAnglesd = prevEulerAngles;
 
         UpdateInput_MousePos();
         UpdateState_MoseMove();
@@ -103,6 +122,7 @@ public class PlayerAbleController : CreatureController
 
         if (prevTarget != _target || prevState != _state)
         {
+            Debug.Log("동기화 패킷!");
             SendSyncPlayer();
         }
 

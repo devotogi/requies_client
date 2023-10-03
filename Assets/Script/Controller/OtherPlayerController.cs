@@ -7,9 +7,12 @@ public class OtherPlayerController : PlayerAbleController
     private float _xRotateMove;
     private float _rotateSpeed = 200.0f;
 
-    public void Awake()
+    public void Start()
     {
-        Debug.Log($"my pos {transform.position.x}, {transform.position.y}, {transform.position.z}");
+        _animator = GetComponent<Animator>();
+        _network = FindObjectOfType<Network>();
+        _agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
+        _agent.enabled = false;
     }
 
     public void Init(Quaternion quaternion, GameObject camera)
@@ -24,15 +27,9 @@ public class OtherPlayerController : PlayerAbleController
     }
 
     public override void UpdateMove_MousePos()
-    {
-        _agent.enabled = true;
-        _agent.SetDestination(_target);
-
-        if (_agent.velocity.sqrMagnitude >= 0.2f * 0.2f && _agent.remainingDistance <= 0.1f)
-        {
-            _agent.enabled = false;
-            _state = Type.State.IDLE;
-        }
+    { 
+        Vector3 dirVector3 = _target - transform.position;
+        transform.position += dirVector3.normalized * Time.deltaTime* _speed;
     }
 
     public override void UpdateIdel() 

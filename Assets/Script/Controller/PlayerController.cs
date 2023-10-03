@@ -19,7 +19,7 @@ public class PlayerController : PlayerAbleController
         while (true) 
         {
             yield return new WaitForSeconds(1.0f);
-            //Debug.Log($"movePacket Cnt:{_movePacketCnt}");
+            // Debug.Log($"movePacket Cnt:{_movePacketCnt}");
             _movePacketCnt = 0;
         }
     }
@@ -28,7 +28,6 @@ public class PlayerController : PlayerAbleController
         StartCoroutine(movePacketCount());
         _camera = camera;
         _cameraLocalRotation = quaternion;
-
         GameObject text_ui = GameObject.FindGameObjectWithTag("Respawn");
         _text = text_ui.GetComponent<Text>();
        
@@ -278,13 +277,13 @@ public class PlayerController : PlayerAbleController
 
     public override void SendSyncPlayer() 
     {
-        byte[] bytes = new byte[54];
+        byte[] bytes = new byte[82];
         MemoryStream ms = new MemoryStream(bytes);
         ms.Position = 0;
 
         BinaryWriter bw = new BinaryWriter(ms);
         bw.Write((Int16)Type.PacketProtocol.C2S_PLAYERSYNC);
-        bw.Write((Int16)54);
+        bw.Write((Int16)82);
         bw.Write((Int32)PlayerID);
         bw.Write((UInt16)_state); // 2
         bw.Write((UInt16)_dir); // 2
@@ -303,19 +302,28 @@ public class PlayerController : PlayerAbleController
         bw.Write((float)_target.y); // 4
         bw.Write((float)_target.z); // 4
 
-        _network.SendPacket(bytes, 54);
+        bw.Write((float)_localRotation.x); // 4
+        bw.Write((float)_localRotation.y); // 4
+        bw.Write((float)_localRotation.z); // 4
+        bw.Write((float)_localRotation.w); // 4
+
+        bw.Write((float)_lookrotation.x); // 4
+        bw.Write((float)_lookrotation.y); // 4
+        bw.Write((float)_lookrotation.z); // 4
+
+        _network.SendPacket(bytes, 82);
         _movePacketCnt++;
     }
 
     public override void SendSyncMap() 
     {
-        byte[] bytes = new byte[54];
+        byte[] bytes = new byte[82];
         MemoryStream ms = new MemoryStream(bytes);
         ms.Position = 0;
 
         BinaryWriter bw = new BinaryWriter(ms);
         bw.Write((Int16)Type.PacketProtocol.C2S_MAPSYNC);
-        bw.Write((Int16)54);
+        bw.Write((Int16)82);
         bw.Write((Int32)PlayerID);
         bw.Write((UInt16)_state); // 2
         bw.Write((UInt16)_dir); // 2
@@ -334,7 +342,16 @@ public class PlayerController : PlayerAbleController
         bw.Write((float)_target.y); // 4
         bw.Write((float)_target.z); // 4
 
-        _network.SendPacket(bytes, 54);
+        bw.Write((float)_localRotation.x); // 4
+        bw.Write((float)_localRotation.y); // 4
+        bw.Write((float)_localRotation.z); // 4
+        bw.Write((float)_localRotation.w); // 4
+
+        bw.Write((float)_lookrotation.x); // 4
+        bw.Write((float)_lookrotation.y); // 4
+        bw.Write((float)_lookrotation.z); // 4
+
+        _network.SendPacket(bytes, 82);
     }
 
     IEnumerator CoAttack() 
@@ -370,14 +387,6 @@ public class PlayerController : PlayerAbleController
 
     public override void UpdateInput_MousePos() 
     {
-        if (_movePacketCnt > 8)
-        {
-            _dir = Type.Dir.NONE;
-            _state = Type.State.IDLE;
-            _mouseDir = Type.Dir.NONE;
-            return;
-        }
-
         if (Input.GetMouseButtonUp(0))
         {
             _mouseDir = Type.Dir.NONE;
@@ -409,12 +418,9 @@ public class PlayerController : PlayerAbleController
             if (Physics.Raycast(ray, out hit, 100.0f))
             {
                 //충돌한 오브젝트를 태그로 구분해서 OK일 경우
-                _target = hit.point;
-                _agent.enabled = true;
-                _agent.SetDestination(_target);
+                _agent.SetDestination(hit.point);
                 _state = Type.State.MOVE;
             }
-
             return;
         }
     }
@@ -433,8 +439,22 @@ public class PlayerController : PlayerAbleController
         }
     }
 
-    public override void UpdateMove_MousePos() 
+    public override void UpdateMove_MousePos()
     {
+        NavMeshPath navMesh = _agent.path;
+
+        for (int i = 0; i < navMesh.corners.Length - 1; i++)
+        {
+            Debug.DrawLine(navMesh.corners[i], navMesh.corners[i + 1], Color.red);
+        }
+
+        if (navMesh.corners.Length >= 2)
+        {
+            Vector3 dest = new Vector3(navMesh.corners[1].x, transform.position.y, navMesh.corners[1].z);
+            transform.LookAt(dest);
+            _target = navMesh.corners[1];
+        }
+
         if (_mouseDir != Type.Dir.NONE)
         {
             _xRotateMove = _mouseDir == Type.Dir.LEFT ? -1 : 1;
@@ -449,7 +469,6 @@ public class PlayerController : PlayerAbleController
         if (_agent.velocity.sqrMagnitude >= 0.2f * 0.2f && _agent.remainingDistance <= 0.1f)
         {
             _state = Type.State.IDLE;
-            _agent.enabled = false;
         }
     }
 }
