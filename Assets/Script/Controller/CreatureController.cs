@@ -10,12 +10,17 @@ public class CreatureController : MonoBehaviour
 
     void Start()
     {
-        
+        CInit();
     }
 
     void Update()
     {
         
+    }
+
+    public virtual void CInit() 
+    {
+        _animator = GetComponent<Animator>();
     }
 
     public virtual void Attacked()

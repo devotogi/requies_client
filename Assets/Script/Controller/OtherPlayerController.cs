@@ -2,37 +2,24 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class OtherPlayerController : PlayerAbleController
+public class OtherPlayerController : PlayController
 {
     private float _xRotateMove;
     private float _rotateSpeed = 200.0f;
-
-    public void Start()
+    public override void CInit()
     {
-        _animator = GetComponent<Animator>();
-        _network = FindObjectOfType<Network>();
+        base.CInit();
         _agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
+        _agent.updateRotation = false;
         _agent.enabled = false;
     }
 
-    public void Init(Quaternion quaternion, GameObject camera)
+    public void Init(Quaternion cameraLocalRotation, GameObject camera)
     {
         _camera = camera;
-        _cameraLocalRotation = quaternion;
+        _cameraLocalRotation = cameraLocalRotation;
     }
-
-    public override void UpdateIdel_MousePos()
-    {
-      
-    }
-
-    public override void UpdateMove_MousePos()
-    { 
-        Vector3 dirVector3 = _target - transform.position;
-        transform.position += dirVector3.normalized * Time.deltaTime* _speed;
-    }
-
-    public override void UpdateIdel() 
+    public override void KeyBoardMove_Update_IDLE()
     {
         if (_camera != null && _mouseDir != Type.Dir.NONE)
         {
@@ -46,7 +33,7 @@ public class OtherPlayerController : PlayerAbleController
         }
     }
 
-    public override void UpdateMove()
+    public override void KeyBoardMove_Update_MOVE()
     {
         if (_mouseDir != Type.Dir.NONE)
         {
@@ -80,7 +67,7 @@ public class OtherPlayerController : PlayerAbleController
         Vector3 cameraLBVector = cameraLVector + cameraBVector;
         Vector3 cameraLFVector = cameraLVector + cameraFVector;
 
-        switch (_dir) 
+        switch (_dir)
         {
             case Type.Dir.UP:
                 transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(cameraFVector), 0.2f);
@@ -138,14 +125,46 @@ public class OtherPlayerController : PlayerAbleController
                 break;
 
             case Type.State.ATTACK:
-                Debug.DrawRay(transform.position + Vector3.up, transform.TransformDirection(Vector3.forward) * 2, Color.red);
                 _animator.Play("knight_attack");
                 break;
         }
     }
 
-    public override void Attacked()
+    public override void MouseMove_Update_IDLE()
     {
-        base.Attacked();
+        if (_mouseDir != Type.Dir.NONE)
+        {
+            _xRotateMove = _mouseDir == Type.Dir.LEFT ? -1 : 1;
+
+            _xRotateMove = _xRotateMove * Time.deltaTime * _rotateSpeed;
+
+            _camera.transform.RotateAround(transform.position, Vector3.up, _xRotateMove);
+
+            _cameraLocalRotation = _camera.transform.localRotation;
+        }
+    }
+
+    public override void MouseMove_Update_MOVE()
+    {
+        Vector3 dirVector3 = _target - transform.position;
+        transform.position += dirVector3.normalized * Time.deltaTime * _speed;
+    }
+
+    public override void UpdateSync(Type.MoveType moveType, Type.State state, Type.Dir dir, Type.Dir mouseDir, Vector3 nowPos, Quaternion quaternion, Vector3 target)
+    {
+        _moveType = moveType;
+        _mouseDir = mouseDir;
+        _state = state;
+        _dir = dir;
+        transform.position = new Vector3(nowPos.x, nowPos.y, nowPos.z);
+        _cameraLocalRotation = quaternion;
+        _camera.transform.localRotation = _cameraLocalRotation;
+        _target = target;
+
+        if (_moveType == Type.MoveType.Mouse && _state == Type.State.MOVE)
+        {
+            Vector3 dest = new Vector3(_target.x, transform.position.y, _target.z);
+            transform.LookAt(dest);
+        }
     }
 }

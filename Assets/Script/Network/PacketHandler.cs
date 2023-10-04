@@ -66,7 +66,7 @@ public class PacketHandler
         }
         else
         {
-            Managers.Data.PlayerAbleDic.TryGetValue(attackedPlayerId, out var opc);
+            Managers.Data.PlayerDic.TryGetValue(attackedPlayerId, out var opc);
             opc.Attacked();
         }
     }
@@ -84,8 +84,8 @@ public class PacketHandler
             if (playerId == Managers.Data.PlayerController.PlayerID)
                 continue;
 
-            Managers.Data.PlayerAbleDic.TryGetValue(playerId, out var opc);
-            Managers.Data.PlayerAbleDic.Remove(playerId);
+            Managers.Data.PlayerDic.TryGetValue(playerId, out var opc);
+            Managers.Data.PlayerDic.Remove(playerId);
             opc.Destory();
         }
     }
@@ -96,8 +96,8 @@ public class PacketHandler
         BinaryReader br = new BinaryReader(ms);
 
         int playerId = br.ReadInt32();
-        Managers.Data.PlayerAbleDic.TryGetValue(playerId, out var opc);
-        Managers.Data.PlayerAbleDic.Remove(playerId);
+        Managers.Data.PlayerDic.TryGetValue(playerId, out var opc);
+        Managers.Data.PlayerDic.Remove(playerId);
         opc.Destory();
     }
 
@@ -131,15 +131,7 @@ public class PacketHandler
             float ty = br.ReadSingle();
             float tz = br.ReadSingle();
             Vector3 target = new Vector3(tx, ty, tz);
-            float lx = br.ReadSingle();
-            float ly = br.ReadSingle();
-            float lz = br.ReadSingle();
-            float lw = br.ReadSingle();
-            Quaternion localRtation = new Quaternion(lx, ly, lz, lw);
-            float ltx = br.ReadSingle();
-            float lty = br.ReadSingle();
-            float ltz = br.ReadSingle();
-            Vector3 lookRotation = new Vector3(ltx, lty, ltz);
+            Type.MoveType moveType = (Type.MoveType)br.ReadInt32();
 
             GameObject playerGo = Managers.Resource.Instantiate("Player/Knight");
             playerGo.name = $"otherPlayer{playerId}";
@@ -147,12 +139,12 @@ public class PacketHandler
             OtherPlayerController opc = playerGo.AddComponent<OtherPlayerController>();
             opc.PlayerID = playerId;
 
-            Managers.Data.PlayerAbleDic.Add(opc.PlayerID, opc);
+            Managers.Data.PlayerDic.Add(opc.PlayerID, opc);
 
             GameObject cameraPosGo = Managers.Resource.Instantiate("Camera/FakeCameraPos");
             cameraPosGo.GetComponent<FakeCameraPos>().Init(playerGo);
             opc.Init(quaternion, cameraPosGo.transform.GetChild(0).gameObject);
-            opc.UpdateSync(state, dir, mouseDir, nowPos, quaternion, target, localRtation, lookRotation);
+            opc.UpdateSync(moveType, state, dir, mouseDir, nowPos, quaternion, target);
         }
         catch (Exception e)
         {
@@ -168,8 +160,8 @@ public class PacketHandler
         int playerId = br.ReadInt32();
         try
         {
-            Managers.Data.PlayerAbleDic.TryGetValue(playerId, out var opc);
-            Managers.Data.PlayerAbleDic.Remove(playerId);
+            Managers.Data.PlayerDic.TryGetValue(playerId, out var opc);
+            Managers.Data.PlayerDic.Remove(playerId);
             opc.Destory();
         }
         catch (Exception e) {
@@ -206,7 +198,7 @@ public class PacketHandler
 
         cameraPosGo.GetComponent<FakeCameraPos>().Init(playerGo);
 
-        Managers.Data.PlayerAbleDic.Add(opc.PlayerID, opc);
+        Managers.Data.PlayerDic.Add(opc.PlayerID, opc);
         opc.Init(cameraLocalRotation, cameraPosGo.transform.GetChild(0).gameObject);
         // opc.UpdateSync(state, dir, mouseDir, startPos, cameraLocalRotation);
     }
@@ -236,16 +228,7 @@ public class PacketHandler
             float ty = br.ReadSingle();
             float tz = br.ReadSingle();
             Vector3 target = new Vector3(tx, ty, tz);
-            float lx = br.ReadSingle();
-            float ly = br.ReadSingle();
-            float lz = br.ReadSingle();
-            float lw = br.ReadSingle();
-            Quaternion localRtation = new Quaternion(lx, ly, lz, lw);
-            float ltx = br.ReadSingle();
-            float lty = br.ReadSingle();
-            float ltz = br.ReadSingle();
-            Vector3 lookRotation = new Vector3(ltx, lty, ltz);
-
+            Type.MoveType moveType = (Type.MoveType)br.ReadInt32();
 
             if (playerId == Managers.Data.PlayerController.PlayerID)
                 continue;
@@ -258,7 +241,7 @@ public class PacketHandler
             opc.PlayerID = playerId;
             try
             {
-                Managers.Data.PlayerAbleDic.Add(opc.PlayerID, opc);
+                Managers.Data.PlayerDic.Add(opc.PlayerID, opc);
             }
             catch (Exception e) {
                 Debug.LogException(e);
@@ -269,7 +252,7 @@ public class PacketHandler
             cameraPosGo.GetComponent<FakeCameraPos>().Init(playerGo);
             opc.Init(cameraLocalRotation, cameraPosGo.transform.GetChild(0).gameObject);
 
-            opc.UpdateSync(state, dir, mouseDir,startPos, cameraLocalRotation, target, localRtation, lookRotation);
+            opc.UpdateSync(moveType, state, dir, mouseDir,startPos, cameraLocalRotation, target);
         }
     }
 
@@ -304,19 +287,11 @@ public class PacketHandler
             float ty = br.ReadSingle();
             float tz = br.ReadSingle();
             Vector3 target = new Vector3(tx, ty, tz);
-            float lx = br.ReadSingle();
-            float ly = br.ReadSingle();
-            float lz = br.ReadSingle();
-            float lw = br.ReadSingle();
-            Quaternion localRtation = new Quaternion(lx,ly,lz,lw) ;
-            float ltx = br.ReadSingle();
-            float lty = br.ReadSingle();
-            float ltz = br.ReadSingle();
-            Vector3 lookRotation = new Vector3(ltx, lty, ltz);
+            Type.MoveType moveType = (Type.MoveType)br.ReadInt32();
 
-            Managers.Data.PlayerAbleDic.TryGetValue(playerId, out var opc);
+            Managers.Data.PlayerDic.TryGetValue(playerId, out var opc);
             if (opc != null)
-                opc.UpdateSync(state, dir, mouseDir, nowPos, quaternion,target, localRtation, lookRotation);
+                opc.UpdateSync(moveType, state, dir, mouseDir, nowPos, quaternion,target);
         }
         catch (Exception e)
         {
@@ -350,7 +325,7 @@ public class PacketHandler
         pc.PlayerID = playerId;
        
         Managers.Data.PlayerController = pc;
-        Managers.Data.PlayerAbleDic.Add(pc.PlayerID, pc);
+        Managers.Data.PlayerDic.Add(pc.PlayerID, pc);
 
         GameObject cameraPosGo = Managers.Resource.Instantiate("Camera/CameraPos");
         cameraPosGo.GetComponent<CameraPos>().Init(playerGo);

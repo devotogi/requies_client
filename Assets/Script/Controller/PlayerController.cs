@@ -6,13 +6,19 @@ using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
 
-public class PlayerController : PlayerAbleController
+public class PlayerController : PlayController
 {
+    [SerializeField]
     private float _rotateSpeed = 200.0f;
+    [SerializeField]
     private float _xRotateMove;
+
     private int _movePacketCnt = 0;
     private Text _text;
-    bool _attackEnd = false;
+
+    private Quaternion _prevCameraLocalRotation;
+    private Network _network;
+
 
     IEnumerator movePacketCount() 
     {
@@ -24,49 +30,30 @@ public class PlayerController : PlayerAbleController
         }
     }
 
-    public void Init(Quaternion quaternion, GameObject camera) {
-        StartCoroutine(movePacketCount());
-        _camera = camera;
-        _cameraLocalRotation = quaternion;
-        GameObject text_ui = GameObject.FindGameObjectWithTag("Respawn");
-        _text = text_ui.GetComponent<Text>();
-       
+    public override void CInit() 
+    {
+        base.CInit();
+        _network = FindObjectOfType<Network>();
+        _agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
+        _agent.updateRotation = false;
+        _agent.enabled = true;
     }
 
-    public override void UpdateInput()
+    public void Init(Quaternion cameraLocalRotation, GameObject camera) {
+        StartCoroutine(movePacketCount());
+        _camera = camera;
+        _cameraLocalRotation = cameraLocalRotation;
+        GameObject text_ui = GameObject.FindGameObjectWithTag("Respawn");
+        _text = text_ui.GetComponent<Text>();
+    }
+
+    public override void KeyBoardMove_Update_Input()
     {
         if (_movePacketCnt > 8)
         {
             _dir = Type.Dir.NONE;
             _state = Type.State.IDLE;
             _mouseDir = Type.Dir.NONE;
-            return;
-        }
-
-        //if (Input.GetMouseButtonUp(1))
-        //{
-        //    RaycastHit hit;
-        //    Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-        //    //레이캐스트 충돌 발생 시
-        //    if (Physics.Raycast(ray, out hit, 100.0f))
-        //    {
-        //        //충돌한 오브젝트를 태그로 구분해서 OK일 경우
-        //        agent.SetDestination(hit.point);
-
-        //        _state = Type.State.CLICK_MOVE;
-        //    }
-
-        //    return;
-        //}
-
-        if (_state == Type.State.ATTACK)
-            return;
-
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            _state = Type.State.ATTACK;
-            StartCoroutine(CoAttack());
             return;
         }
 
@@ -117,7 +104,6 @@ public class PlayerController : PlayerAbleController
             }
         }
 
-       
         if (Input.GetKey(KeyCode.W))
         {
             _dir = (Type.Dir)((UInt16)_dir | (0x01 << 1));
@@ -150,17 +136,7 @@ public class PlayerController : PlayerAbleController
         }
     }
 
-    public override void UpdateAttack() 
-    {
-        if (_attackEnd) 
-        {
-            _state = Type.State.IDLE;
-            _dir = Type.Dir.NONE;
-            _attackEnd = false;
-        }
-    }
-
-    public override void UpdateIdel()
+    public override void KeyBoardMove_Update_IDLE()
     {
         if (_mouseDir != Type.Dir.NONE)
         {
@@ -171,11 +147,10 @@ public class PlayerController : PlayerAbleController
             _camera.transform.RotateAround(transform.position, Vector3.up, _xRotateMove);
 
             _cameraLocalRotation = _camera.transform.localRotation;
-
         }
     }
 
-    public override void UpdateMove() 
+    public override void KeyBoardMove_Update_MOVE() 
     {
         if (_mouseDir != Type.Dir.NONE)
         {
@@ -277,13 +252,13 @@ public class PlayerController : PlayerAbleController
 
     public override void SendSyncPlayer() 
     {
-        byte[] bytes = new byte[82];
+        byte[] bytes = new byte[58];
         MemoryStream ms = new MemoryStream(bytes);
         ms.Position = 0;
 
         BinaryWriter bw = new BinaryWriter(ms);
         bw.Write((Int16)Type.PacketProtocol.C2S_PLAYERSYNC);
-        bw.Write((Int16)82);
+        bw.Write((Int16)58);
         bw.Write((Int32)PlayerID);
         bw.Write((UInt16)_state); // 2
         bw.Write((UInt16)_dir); // 2
@@ -302,28 +277,21 @@ public class PlayerController : PlayerAbleController
         bw.Write((float)_target.y); // 4
         bw.Write((float)_target.z); // 4
 
-        bw.Write((float)_localRotation.x); // 4
-        bw.Write((float)_localRotation.y); // 4
-        bw.Write((float)_localRotation.z); // 4
-        bw.Write((float)_localRotation.w); // 4
+        bw.Write((Int32)_moveType); // 4
 
-        bw.Write((float)_lookrotation.x); // 4
-        bw.Write((float)_lookrotation.y); // 4
-        bw.Write((float)_lookrotation.z); // 4
-
-        _network.SendPacket(bytes, 82);
+        _network.SendPacket(bytes, 58);
         _movePacketCnt++;
     }
 
     public override void SendSyncMap() 
     {
-        byte[] bytes = new byte[82];
+        byte[] bytes = new byte[58];
         MemoryStream ms = new MemoryStream(bytes);
         ms.Position = 0;
 
         BinaryWriter bw = new BinaryWriter(ms);
         bw.Write((Int16)Type.PacketProtocol.C2S_MAPSYNC);
-        bw.Write((Int16)82);
+        bw.Write((Int16)58);
         bw.Write((Int32)PlayerID);
         bw.Write((UInt16)_state); // 2
         bw.Write((UInt16)_dir); // 2
@@ -342,50 +310,11 @@ public class PlayerController : PlayerAbleController
         bw.Write((float)_target.y); // 4
         bw.Write((float)_target.z); // 4
 
-        bw.Write((float)_localRotation.x); // 4
-        bw.Write((float)_localRotation.y); // 4
-        bw.Write((float)_localRotation.z); // 4
-        bw.Write((float)_localRotation.w); // 4
+        bw.Write((Int32)_moveType); // 4
 
-        bw.Write((float)_lookrotation.x); // 4
-        bw.Write((float)_lookrotation.y); // 4
-        bw.Write((float)_lookrotation.z); // 4
-
-        _network.SendPacket(bytes, 82);
+        _network.SendPacket(bytes, 58);
     }
-
-    IEnumerator CoAttack() 
-    {
-        yield return new WaitForSeconds(0.19f);
-        RaycastHit hit;
-        if (Physics.Raycast(transform.position + Vector3.up, transform.TransformDirection(Vector3.forward), out hit, 2))
-        {
-            int otherPlayerId = hit.transform.gameObject.GetComponent<OtherPlayerController>().PlayerID;
-            Attack(otherPlayerId);
-        }
-        yield return new WaitForSeconds(1.5f);
-        _attackEnd = true;
-    }
-
-    private void Attack(int otherPlayerId) 
-    {
-        byte[] bytes = new byte[13];
-        MemoryStream ms = new MemoryStream(bytes);
-        ms.Position = 0;
-
-        BinaryWriter bw = new BinaryWriter(ms);
-        bw.Write((Int16)Type.PacketProtocol.C2S_PLAYERATTACK);
-        bw.Write((Int16)8);
-        bw.Write((Int64)otherPlayerId);
-
-        _network.SendPacket(bytes, 8);
-    }
-    public override void Attacked()
-    {
-        base.Attacked();
-    }
-
-    public override void UpdateInput_MousePos() 
+    public override void MouseMove_Update_Input() 
     {
         if (Input.GetMouseButtonUp(0))
         {
@@ -425,7 +354,7 @@ public class PlayerController : PlayerAbleController
         }
     }
 
-    public override void UpdateIdel_MousePos() 
+    public override void MouseMove_Update_IDLE() 
     {
         if (_mouseDir != Type.Dir.NONE)
         {
@@ -439,7 +368,7 @@ public class PlayerController : PlayerAbleController
         }
     }
 
-    public override void UpdateMove_MousePos()
+    public override void MouseMove_Update_MOVE()
     {
         NavMeshPath navMesh = _agent.path;
 

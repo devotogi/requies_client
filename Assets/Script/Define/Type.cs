@@ -32,9 +32,7 @@ public class Type
         IDLE,
         MOVE,
         ATTACK,
-        CLICK_MOVE,
     }
-
     public enum Dir : UInt16
     {
         NONE = 0,

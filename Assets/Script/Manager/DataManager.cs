@@ -5,8 +5,8 @@ using UnityEngine;
 public class DataManager
 {
     PlayerController _playerController = null;
-    Dictionary<int, PlayerAbleController>  _playerAbleDic = new Dictionary<int, PlayerAbleController>();  
+    Dictionary<int, PlayController>  _playDic = new Dictionary<int, PlayController>();  
 
     public PlayerController PlayerController { get { return _playerController; } set { _playerController = value; } }
-    public Dictionary<int, PlayerAbleController> PlayerAbleDic { get { return _playerAbleDic; } }
+    public Dictionary<int, PlayController> PlayerDic { get { return _playDic; } }
 }
