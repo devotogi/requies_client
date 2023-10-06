@@ -114,6 +114,9 @@ public class OtherPlayerController : PlayController
 
     public override void UpdateAnimation()
     {
+        if (_coAttacked == true)
+            return;
+
         switch (_state)
         {
             case Type.State.IDLE:
@@ -166,5 +169,19 @@ public class OtherPlayerController : PlayController
             Vector3 dest = new Vector3(_target.x, transform.position.y, _target.z);
             transform.LookAt(dest);
         }
+    }
+
+    IEnumerator CoAttacked()
+    {
+        _coAttacked = true;
+        yield return new WaitForSeconds(5.1f);
+        _coAttacked = false;
+    }
+
+    public override void Attacked()
+    {
+        if (_coAttacked) return;
+        _animator.Play("knight_attacked");
+        StartCoroutine(CoAttacked());
     }
 }

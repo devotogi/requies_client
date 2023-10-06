@@ -9,14 +9,15 @@ public class PlayController : CreatureController
  
     protected float _speed = 3.0f;
     protected GameObject _camera = null;
-    protected Type.MoveType _moveType = Type.MoveType.Mouse;
+    protected Type.MoveType _moveType = Type.MoveType.KeyBoard;
     protected Vector3 _target = Vector3.zero;
     protected NavMeshAgent _agent;
     protected Quaternion _cameraLocalRotation;
     protected Type.Dir _mouseDir = Type.Dir.NONE;
     protected Vector3 _dirVector3 = Vector3.zero;
+    protected bool _coAttack = false;
+    protected bool _coAttacked = false;
     private Vector3 _mousePrevPos = Vector3.zero;
-
     private void OnDestroy()
     {
         if (_camera != null)
@@ -97,6 +98,10 @@ public class PlayController : CreatureController
             case Type.State.MOVE:
                 KeyBoardMove_Update_MOVE();
                 break;
+
+            case Type.State.ATTACK:
+                KeyBoardMove_Update_ATTACK();
+                break;
         }
 
         if (prevState != _state || prevDir != _dir || prevMouseDir != _mouseDir)
@@ -119,6 +124,8 @@ public class PlayController : CreatureController
     public virtual void KeyBoardMove_Update_IDLE() { }
     public virtual void KeyBoardMove_Update_MOVE() { }
     public virtual void KeyBoardMove_Update_Input() { }
+    public virtual void KeyBoardMove_Update_ATTACK() { }
+    public virtual void KeyBoardMove_Update_ATTACKED() { }
     public virtual void UpdateAnimation() { }
     public virtual void SendSyncPlayer() { }
     public virtual void SendSyncMap() { }

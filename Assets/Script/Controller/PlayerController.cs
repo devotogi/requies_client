@@ -19,6 +19,25 @@ public class PlayerController : PlayController
     private Quaternion _prevCameraLocalRotation;
     private Network _network;
 
+    void OnDrawGizmos()
+    {
+
+        float maxDistance = 2;
+        RaycastHit hit;
+        int layerMask = 1 << LayerMask.NameToLayer("Enemy");
+        // Physics.SphereCast (레이저를 발사할 위치, 구의 반경, 발사 방향, 충돌 결과, 최대 거리)
+        bool isHit = Physics.SphereCast(transform.position + Vector3.up, transform.lossyScale.x / 2, transform.forward, out hit, maxDistance, layerMask);
+        Gizmos.color = Color.red;
+        if (isHit)
+        {
+            Gizmos.DrawRay(transform.position + Vector3.up, transform.forward * hit.distance);
+            Gizmos.DrawWireSphere((transform.position + Vector3.up) + (transform.forward * hit.distance), transform.lossyScale.x / 2);
+        }
+        else
+        {
+            Gizmos.DrawRay(transform.position + Vector3.up, transform.forward * maxDistance);
+        }
+    }
 
     IEnumerator movePacketCount()
     {
@@ -50,11 +69,26 @@ public class PlayerController : PlayController
 
     public override void KeyBoardMove_Update_Input()
     {
+        if (_coAttacked == true)
+            return;
+
+        if (_coAttack == false)
+            _state = Type.State.IDLE;
+
+        if (_state == Type.State.ATTACK)
+            return;
+
         if (_movePacketCnt > 8)
         {
             _dir = Type.Dir.NONE;
             _state = Type.State.IDLE;
             _mouseDir = Type.Dir.NONE;
+            return;
+        }
+
+        if (Input.GetMouseButtonUp(1))
+        {
+            _state = Type.State.ATTACK;
             return;
         }
 
@@ -139,6 +173,9 @@ public class PlayerController : PlayController
 
     public override void KeyBoardMove_Update_IDLE()
     {
+        if (_coAttacked == true)
+            return;
+
         if (_mouseDir != Type.Dir.NONE)
         {
             _xRotateMove = _mouseDir == Type.Dir.LEFT ? -1 : 1;
@@ -153,6 +190,9 @@ public class PlayerController : PlayController
 
     public override void KeyBoardMove_Update_MOVE()
     {
+        if (_coAttacked == true)
+            return;
+
         if (_mouseDir != Type.Dir.NONE)
         {
             _xRotateMove = _mouseDir == Type.Dir.LEFT ? -1 : 1;
@@ -230,9 +270,24 @@ public class PlayerController : PlayController
         }
     }
 
+    public override void KeyBoardMove_Update_ATTACK()
+    {
+        if (_coAttack == false)
+            StartCoroutine(CoAttack());
+    }
+
+    public override void KeyBoardMove_Update_ATTACKED()
+    {
+        if (_coAttacked == false)
+            StartCoroutine(CoAttacked());
+    }
+
     public override void UpdateAnimation()
     {
         _text.text = $"Pos X:{(int)transform.position.x}, Z:{(int)transform.position.z}";
+
+        if (_coAttacked == true)
+            return;
 
         switch (_state)
         {
@@ -245,7 +300,6 @@ public class PlayerController : PlayController
                 break;
 
             case Type.State.ATTACK:
-                Debug.DrawRay(transform.position + Vector3.up, transform.TransformDirection(Vector3.forward) * 2, Color.red);
                 _animator.Play("knight_attack");
                 break;
         }
@@ -338,7 +392,6 @@ public class PlayerController : PlayController
             }
         }
 
-
         if (Input.GetMouseButtonUp(1))
         {
             RaycastHit hit;
@@ -400,5 +453,49 @@ public class PlayerController : PlayController
         {
             _state = Type.State.IDLE;
         }
+    }
+
+    IEnumerator CoAttack() 
+    {
+        _coAttack = true;
+        yield return new WaitForSeconds(0.5f);
+        RaycastHit hit;
+        int layerMask = 1 << LayerMask.NameToLayer("Enemy");
+
+        if (Physics.SphereCast(transform.position + Vector3.up, transform.lossyScale.x / 2, transform.TransformDirection(Vector3.forward), out hit, 2, layerMask))
+        {
+            Gizmos.color = Color.red;
+
+            PlayController pc = hit.transform.gameObject.GetComponent<PlayController>();
+            Int32 otherPlayerId = pc.PlayerID;
+            Debug.Log("타격");
+            // 패킷 전송
+            byte[] bytes = new byte[8];
+            MemoryStream ms = new MemoryStream(bytes);
+            ms.Position = 0;
+
+            BinaryWriter bw = new BinaryWriter(ms);
+            bw.Write((Int16)Type.PacketProtocol.C2S_PLAYERATTACK);
+            bw.Write((Int16)8);
+            bw.Write((Int32)otherPlayerId);
+            _network.SendPacket(bytes, 8);
+        }
+        yield return new WaitForSeconds(1.11f);
+        _coAttack = false;
+        _dir = Type.Dir.NONE;
+    }
+
+    IEnumerator CoAttacked()
+    {
+        _coAttacked = true;
+        yield return new WaitForSeconds(5.1f);
+        _coAttacked = false;
+    }
+
+    public override void Attacked() 
+    {
+        if (_coAttacked) return;
+        _animator.Play("knight_attacked");
+        StartCoroutine(CoAttacked());
     }
 }
