@@ -20,9 +20,9 @@ public class PlayerController : PlayController
     private Network _network;
 
 
-    IEnumerator movePacketCount() 
+    IEnumerator movePacketCount()
     {
-        while (true) 
+        while (true)
         {
             yield return new WaitForSeconds(1.0f);
             // Debug.Log($"movePacket Cnt:{_movePacketCnt}");
@@ -30,7 +30,7 @@ public class PlayerController : PlayController
         }
     }
 
-    public override void CInit() 
+    public override void CInit()
     {
         base.CInit();
         _network = FindObjectOfType<Network>();
@@ -39,7 +39,8 @@ public class PlayerController : PlayController
         _agent.enabled = true;
     }
 
-    public void Init(Quaternion cameraLocalRotation, GameObject camera) {
+    public void Init(Quaternion cameraLocalRotation, GameObject camera)
+    {
         StartCoroutine(movePacketCount());
         _camera = camera;
         _cameraLocalRotation = cameraLocalRotation;
@@ -77,7 +78,7 @@ public class PlayerController : PlayController
             _dir = (Type.Dir)((UInt16)_dir ^ (0x01 << 3));
         }
 
-        if (Input.GetKeyUp(KeyCode.A) &&  (_dir & (Type.Dir.LEFT)) != 0)
+        if (Input.GetKeyUp(KeyCode.A) && (_dir & (Type.Dir.LEFT)) != 0)
         {
             _dir = (Type.Dir)((UInt16)_dir ^ (0x01 << 4));
         }
@@ -118,7 +119,7 @@ public class PlayerController : PlayController
             _dir = (Type.Dir)((UInt16)_dir | (0x01 << 2));
             _state = Type.State.MOVE;
         }
- 
+
         if (Input.GetKey(KeyCode.S))
         {
             _dir = (Type.Dir)((UInt16)_dir | (0x01 << 3));
@@ -128,7 +129,7 @@ public class PlayerController : PlayController
 
             _state = Type.State.MOVE;
         }
-     
+
         if (Input.GetKey(KeyCode.A))
         {
             _dir = (Type.Dir)((UInt16)_dir | (0x01 << 4));
@@ -150,7 +151,7 @@ public class PlayerController : PlayController
         }
     }
 
-    public override void KeyBoardMove_Update_MOVE() 
+    public override void KeyBoardMove_Update_MOVE()
     {
         if (_mouseDir != Type.Dir.NONE)
         {
@@ -179,10 +180,10 @@ public class PlayerController : PlayController
         cameraLVector.y = 0;
         cameraLVector = cameraLVector.normalized;
 
-        Vector3 cameraFRVector = cameraFVector + cameraRVector;
-        Vector3 cameraRBVector = cameraBVector + cameraRVector;
-        Vector3 cameraLBVector = cameraLVector + cameraBVector;
-        Vector3 cameraLFVector = cameraLVector + cameraFVector;
+        Vector3 cameraFRVector = (cameraFVector + cameraRVector).normalized;
+        Vector3 cameraRBVector = (cameraBVector + cameraRVector).normalized;
+        Vector3 cameraLBVector = (cameraLVector + cameraBVector).normalized;
+        Vector3 cameraLFVector = (cameraLVector + cameraFVector).normalized;
 
         switch (_dir)
         {
@@ -229,11 +230,11 @@ public class PlayerController : PlayController
         }
     }
 
-    public override void UpdateAnimation() 
+    public override void UpdateAnimation()
     {
         _text.text = $"Pos X:{(int)transform.position.x}, Z:{(int)transform.position.z}";
-        
-        switch (_state) 
+
+        switch (_state)
         {
             case Type.State.IDLE:
                 _animator.Play("knight_idle");
@@ -250,7 +251,7 @@ public class PlayerController : PlayController
         }
     }
 
-    public override void SendSyncPlayer() 
+    public override void SendSyncPlayer()
     {
         byte[] bytes = new byte[58];
         MemoryStream ms = new MemoryStream(bytes);
@@ -283,7 +284,7 @@ public class PlayerController : PlayController
         _movePacketCnt++;
     }
 
-    public override void SendSyncMap() 
+    public override void SendSyncMap()
     {
         byte[] bytes = new byte[58];
         MemoryStream ms = new MemoryStream(bytes);
@@ -314,7 +315,7 @@ public class PlayerController : PlayController
 
         _network.SendPacket(bytes, 58);
     }
-    public override void MouseMove_Update_Input() 
+    public override void MouseMove_Update_Input()
     {
         if (Input.GetMouseButtonUp(0))
         {
@@ -354,7 +355,7 @@ public class PlayerController : PlayController
         }
     }
 
-    public override void MouseMove_Update_IDLE() 
+    public override void MouseMove_Update_IDLE()
     {
         if (_mouseDir != Type.Dir.NONE)
         {

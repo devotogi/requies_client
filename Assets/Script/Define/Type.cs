@@ -24,7 +24,7 @@ public class Type
         C2S_PLAYERATTACK,
         S2C_PLAYERATTACKED,
     }
-    public static string IP { get { return "58.236.86.23"; } }
+    public static string IP { get { return "58.236.130.58"; } }
     public static int PORT { get { return 30002; } }
 
     public enum State : UInt16

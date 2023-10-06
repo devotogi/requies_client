@@ -11,7 +11,7 @@ public class OtherPlayerController : PlayController
         base.CInit();
         _agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
         _agent.updateRotation = false;
-        _agent.enabled = false;
+        _agent.enabled = true;
     }
 
     public void Init(Quaternion cameraLocalRotation, GameObject camera)
@@ -62,10 +62,10 @@ public class OtherPlayerController : PlayController
         cameraLVector.y = 0;
         cameraLVector = cameraLVector.normalized;
 
-        Vector3 cameraFRVector = cameraFVector + cameraRVector;
-        Vector3 cameraRBVector = cameraBVector + cameraRVector;
-        Vector3 cameraLBVector = cameraLVector + cameraBVector;
-        Vector3 cameraLFVector = cameraLVector + cameraFVector;
+        Vector3 cameraFRVector = (cameraFVector + cameraRVector).normalized;
+        Vector3 cameraRBVector = (cameraBVector + cameraRVector).normalized;
+        Vector3 cameraLBVector = (cameraLVector + cameraBVector).normalized;
+        Vector3 cameraLFVector = (cameraLVector + cameraFVector).normalized;
 
         switch (_dir)
         {
@@ -156,7 +156,7 @@ public class OtherPlayerController : PlayController
         _mouseDir = mouseDir;
         _state = state;
         _dir = dir;
-        transform.position = new Vector3(nowPos.x, nowPos.y, nowPos.z);
+        GetComponent<UnityEngine.AI.NavMeshAgent>().Warp(new Vector3(nowPos.x, nowPos.y, nowPos.z));
         _cameraLocalRotation = quaternion;
         _camera.transform.localRotation = _cameraLocalRotation;
         _target = target;
