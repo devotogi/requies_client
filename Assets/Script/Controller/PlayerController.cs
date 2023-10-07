@@ -307,13 +307,13 @@ public class PlayerController : PlayController
 
     public override void SendSyncPlayer()
     {
-        byte[] bytes = new byte[58];
+        byte[] bytes = new byte[74];
         MemoryStream ms = new MemoryStream(bytes);
         ms.Position = 0;
 
         BinaryWriter bw = new BinaryWriter(ms);
         bw.Write((Int16)Type.PacketProtocol.C2S_PLAYERSYNC);
-        bw.Write((Int16)58);
+        bw.Write((Int16)74);
         bw.Write((Int32)PlayerID);
         bw.Write((UInt16)_state); // 2
         bw.Write((UInt16)_dir); // 2
@@ -334,19 +334,24 @@ public class PlayerController : PlayController
 
         bw.Write((Int32)_moveType); // 4
 
-        _network.SendPacket(bytes, 58);
+        bw.Write((float)transform.localRotation.x);
+        bw.Write((float)transform.localRotation.y);
+        bw.Write((float)transform.localRotation.z);
+        bw.Write((float)transform.localRotation.w);
+
+        _network.SendPacket(bytes, 74);
         _movePacketCnt++;
     }
 
     public override void SendSyncMap()
     {
-        byte[] bytes = new byte[58];
+        byte[] bytes = new byte[74];
         MemoryStream ms = new MemoryStream(bytes);
         ms.Position = 0;
 
         BinaryWriter bw = new BinaryWriter(ms);
         bw.Write((Int16)Type.PacketProtocol.C2S_MAPSYNC);
-        bw.Write((Int16)58);
+        bw.Write((Int16)74);
         bw.Write((Int32)PlayerID);
         bw.Write((UInt16)_state); // 2
         bw.Write((UInt16)_dir); // 2
@@ -367,7 +372,12 @@ public class PlayerController : PlayController
 
         bw.Write((Int32)_moveType); // 4
 
-        _network.SendPacket(bytes, 58);
+        bw.Write((float)transform.localRotation.x);
+        bw.Write((float)transform.localRotation.y);
+        bw.Write((float)transform.localRotation.z);
+        bw.Write((float)transform.localRotation.w);
+
+        _network.SendPacket(bytes, 74);
     }
     public override void MouseMove_Update_Input()
     {

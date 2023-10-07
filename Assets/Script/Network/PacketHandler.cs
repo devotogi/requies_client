@@ -132,6 +132,11 @@ public class PacketHandler
             float tz = br.ReadSingle();
             Vector3 target = new Vector3(tx, ty, tz);
             Type.MoveType moveType = (Type.MoveType)br.ReadInt32();
+            float lx = br.ReadSingle();
+            float ly = br.ReadSingle();
+            float lz = br.ReadSingle();
+            float lw = br.ReadSingle();
+            Quaternion localRotation = new Quaternion(lx, ly, lz, lw);
 
             GameObject playerGo = Managers.Resource.Instantiate("Player/Knight");
             playerGo.name = $"otherPlayer{playerId}";
@@ -144,7 +149,7 @@ public class PacketHandler
             GameObject cameraPosGo = Managers.Resource.Instantiate("Camera/FakeCameraPos");
             cameraPosGo.GetComponent<FakeCameraPos>().Init(playerGo);
             opc.Init(quaternion, cameraPosGo.transform.GetChild(0).gameObject);
-            opc.UpdateSync(moveType, state, dir, mouseDir, nowPos, quaternion, target);
+            opc.UpdateSync(moveType, state, dir, mouseDir, nowPos, quaternion, target, localRotation);
         }
         catch (Exception e)
         {
@@ -229,6 +234,11 @@ public class PacketHandler
             float tz = br.ReadSingle();
             Vector3 target = new Vector3(tx, ty, tz);
             Type.MoveType moveType = (Type.MoveType)br.ReadInt32();
+            float lx = br.ReadSingle();
+            float ly = br.ReadSingle();
+            float lz = br.ReadSingle();
+            float lw = br.ReadSingle();
+            Quaternion localRotation = new Quaternion(lx, ly, lz, lw);
 
             if (playerId == Managers.Data.PlayerController.PlayerID)
                 continue;
@@ -252,7 +262,7 @@ public class PacketHandler
             cameraPosGo.GetComponent<FakeCameraPos>().Init(playerGo);
             opc.Init(cameraLocalRotation, cameraPosGo.transform.GetChild(0).gameObject);
 
-            opc.UpdateSync(moveType, state, dir, mouseDir,startPos, cameraLocalRotation, target);
+            opc.UpdateSync(moveType, state, dir, mouseDir,startPos, cameraLocalRotation, target, localRotation);
         }
     }
 
@@ -288,10 +298,15 @@ public class PacketHandler
             float tz = br.ReadSingle();
             Vector3 target = new Vector3(tx, ty, tz);
             Type.MoveType moveType = (Type.MoveType)br.ReadInt32();
+            float lx = br.ReadSingle();
+            float ly = br.ReadSingle();
+            float lz = br.ReadSingle();
+            float lw = br.ReadSingle();
+            Quaternion localRotation = new Quaternion(lx, ly, lz, lw);
 
             Managers.Data.PlayerDic.TryGetValue(playerId, out var opc);
             if (opc != null)
-                opc.UpdateSync(moveType, state, dir, mouseDir, nowPos, quaternion,target);
+                opc.UpdateSync(moveType, state, dir, mouseDir, nowPos, quaternion,target, localRotation);
         }
         catch (Exception e)
         {

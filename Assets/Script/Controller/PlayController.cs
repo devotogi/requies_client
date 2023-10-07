@@ -40,7 +40,7 @@ public class PlayController : CreatureController
         UpdateAnimation();
     }
 
-    public virtual void UpdateSync(Type.MoveType moveType, Type.State state, Type.Dir dir, Type.Dir mouseDir, Vector3 nowPos, Quaternion quaternion, Vector3 target)
+    public virtual void UpdateSync(Type.MoveType moveType, Type.State state, Type.Dir dir, Type.Dir mouseDir, Vector3 nowPos, Quaternion quaternion, Vector3 target, Quaternion localRotation)
     {
         
     }

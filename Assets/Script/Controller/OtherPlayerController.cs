@@ -153,7 +153,7 @@ public class OtherPlayerController : PlayController
         transform.position += dirVector3.normalized * Time.deltaTime * _speed;
     }
 
-    public override void UpdateSync(Type.MoveType moveType, Type.State state, Type.Dir dir, Type.Dir mouseDir, Vector3 nowPos, Quaternion quaternion, Vector3 target)
+    public override void UpdateSync(Type.MoveType moveType, Type.State state, Type.Dir dir, Type.Dir mouseDir, Vector3 nowPos, Quaternion quaternion, Vector3 target, Quaternion localRotation)
     {
         _moveType = moveType;
         _mouseDir = mouseDir;
@@ -162,6 +162,7 @@ public class OtherPlayerController : PlayController
         GetComponent<UnityEngine.AI.NavMeshAgent>().Warp(new Vector3(nowPos.x, nowPos.y, nowPos.z));
         _cameraLocalRotation = quaternion;
         _camera.transform.localRotation = _cameraLocalRotation;
+        transform.localRotation = localRotation;
         _target = target;
 
         if (_moveType == Type.MoveType.Mouse && _state == Type.State.MOVE)
