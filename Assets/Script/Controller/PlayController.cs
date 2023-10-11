@@ -129,4 +129,7 @@ public class PlayController : CreatureController
     public virtual void UpdateAnimation() { }
     public virtual void SendSyncPlayer() { }
     public virtual void SendSyncMap() { }
+
+    public virtual void SetHp(float hp) { }
+    public virtual void SetMp(float hp) { }
 }

@@ -12,12 +12,15 @@ public class PlayerController : PlayController
     private float _rotateSpeed = 200.0f;
     [SerializeField]
     private float _xRotateMove;
+    [SerializeField]
+    private float _damage = 10f;
 
     private int _movePacketCnt = 0;
     private Text _text;
 
     private Quaternion _prevCameraLocalRotation;
     private Network _network;
+    HpMpController _hpMpController;
 
     void OnDrawGizmos()
     {
@@ -56,6 +59,7 @@ public class PlayerController : PlayController
         _agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
         _agent.updateRotation = false;
         _agent.enabled = true;
+        _hpMpController = GameObject.FindGameObjectWithTag("HpMp").GetComponent<HpMpController>();
     }
 
     public void Init(Quaternion cameraLocalRotation, GameObject camera)
@@ -64,7 +68,11 @@ public class PlayerController : PlayController
         _camera = camera;
         _cameraLocalRotation = cameraLocalRotation;
         GameObject text_ui = GameObject.FindGameObjectWithTag("Respawn");
-        _text = text_ui.GetComponent<Text>();
+    }
+
+    public void SetAgentPos(Vector3 pos) 
+    {
+        GetComponent<UnityEngine.AI.NavMeshAgent>().Warp(pos);
     }
 
     public override void KeyBoardMove_Update_Input()
@@ -284,8 +292,6 @@ public class PlayerController : PlayController
 
     public override void UpdateAnimation()
     {
-        _text.text = $"Pos X:{(int)transform.position.x}, Z:{(int)transform.position.z}";
-
         if (_coAttacked == true)
             return;
 
@@ -468,7 +474,9 @@ public class PlayerController : PlayController
     IEnumerator CoAttack() 
     {
         _coAttack = true;
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(0.1f);
+        Debug.Log("공겨");
+        
         RaycastHit hit;
         int layerMask = 1 << LayerMask.NameToLayer("Enemy");
 
@@ -480,17 +488,18 @@ public class PlayerController : PlayController
             Int32 otherPlayerId = pc.PlayerID;
             Debug.Log("타격");
             // 패킷 전송
-            byte[] bytes = new byte[8];
+            byte[] bytes = new byte[12];
             MemoryStream ms = new MemoryStream(bytes);
             ms.Position = 0;
 
             BinaryWriter bw = new BinaryWriter(ms);
             bw.Write((Int16)Type.PacketProtocol.C2S_PLAYERATTACK);
-            bw.Write((Int16)8);
+            bw.Write((Int16)12);
             bw.Write((Int32)otherPlayerId);
-            _network.SendPacket(bytes, 8);
+            bw.Write((Int32)_damage);
+            _network.SendPacket(bytes, 12);
         }
-        yield return new WaitForSeconds(1.11f);
+        yield return new WaitForSeconds(0.5f);
         _coAttack = false;
         _dir = Type.Dir.NONE;
     }
@@ -498,7 +507,8 @@ public class PlayerController : PlayController
     IEnumerator CoAttacked()
     {
         _coAttacked = true;
-        yield return new WaitForSeconds(5.1f);
+        yield return new WaitForSeconds(1.2f);
+        _dir = Type.Dir.NONE;
         _coAttacked = false;
     }
 
@@ -507,5 +517,15 @@ public class PlayerController : PlayController
         if (_coAttacked) return;
         _animator.Play("knight_attacked");
         StartCoroutine(CoAttacked());
+    }
+
+    public override void SetHp(float hp)
+    {
+        GameObject.FindGameObjectWithTag("HpMp").GetComponent<HpMpController>().SetHp(hp);
+    }
+
+    public override void SetMp(float mp)
+    {
+        GameObject.FindGameObjectWithTag("HpMp").GetComponent<HpMpController>().SetMp(mp);
     }
 }

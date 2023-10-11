@@ -6,6 +6,7 @@ public class OtherPlayerController : PlayController
 {
     private float _xRotateMove;
     private float _rotateSpeed = 200.0f;
+    private HpController _hpController = null;
     public override void CInit()
     {
         base.CInit();
@@ -14,13 +15,17 @@ public class OtherPlayerController : PlayController
         _agent.enabled = true;
     }
 
-    public void Init(Quaternion cameraLocalRotation, GameObject camera)
+    public void Init(Quaternion cameraLocalRotation, GameObject camera, HpController hpc)
     {
         _camera = camera;
         _cameraLocalRotation = cameraLocalRotation;
+        _hpController = hpc;
     }
     public override void KeyBoardMove_Update_IDLE()
     {
+        if (_coAttacked)
+            return;
+
         if (_camera != null && _mouseDir != Type.Dir.NONE)
         {
             _xRotateMove = _mouseDir == Type.Dir.LEFT ? -1 : 1;
@@ -35,6 +40,9 @@ public class OtherPlayerController : PlayController
 
     public override void KeyBoardMove_Update_MOVE()
     {
+        if (_coAttacked)
+            return;
+
         if (_mouseDir != Type.Dir.NONE)
         {
             _xRotateMove = _mouseDir == Type.Dir.LEFT ? -1 : 1;
@@ -131,6 +139,9 @@ public class OtherPlayerController : PlayController
                 _animator.Play("knight_attack");
                 break;
         }
+        // Debug.Log(_hpController.transform.position);
+        if (_hpController != null)
+            _hpController.transform.position = Camera.main.WorldToScreenPoint(transform.position + new Vector3(0, 0.8f, 0));
     }
 
     public override void MouseMove_Update_IDLE()
@@ -175,7 +186,8 @@ public class OtherPlayerController : PlayController
     IEnumerator CoAttacked()
     {
         _coAttacked = true;
-        yield return new WaitForSeconds(5.1f);
+        yield return new WaitForSeconds(1.2f);
+        _dir = Type.Dir.NONE;
         _coAttacked = false;
     }
 
