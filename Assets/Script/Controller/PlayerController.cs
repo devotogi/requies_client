@@ -475,8 +475,7 @@ public class PlayerController : PlayController
     {
         _coAttack = true;
         yield return new WaitForSeconds(0.1f);
-        Debug.Log("공겨");
-        
+
         RaycastHit hit;
         int layerMask = 1 << LayerMask.NameToLayer("Enemy");
 
@@ -486,8 +485,7 @@ public class PlayerController : PlayController
 
             PlayController pc = hit.transform.gameObject.GetComponent<PlayController>();
             Int32 otherPlayerId = pc.PlayerID;
-            Debug.Log("타격");
-            // 패킷 전송
+
             byte[] bytes = new byte[12];
             MemoryStream ms = new MemoryStream(bytes);
             ms.Position = 0;

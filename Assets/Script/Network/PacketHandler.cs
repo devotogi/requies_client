@@ -64,14 +64,13 @@ public class PacketHandler
         MemoryStream ms = new MemoryStream(dataPtr.Array, dataPtr.Offset, dataPtr.Count);
         BinaryReader br = new BinaryReader(ms);
 
+        int playerId = br.ReadInt32();
         int msgSize = br.ReadInt32();
         byte[] msgBytes = br.ReadBytes(msgSize);
         string msg = Encoding.Unicode.GetString(msgBytes);
 
-        GameObject chatConet = GameObject.FindGameObjectWithTag("ChatContent");
-
-        GameObject textGo = Managers.Resource.Instantiate("UI/Chatting", chatConet.transform);
-        textGo.GetComponent<TMP_Text>().text = msg;
+        GameObject chatInput = GameObject.FindGameObjectWithTag("ChatInput");
+        chatInput.GetComponent<ChatInputController>().Push(msg);
     }
 
     private void PacketHandler_S2C_PLAYERATTACKED(ArraySegment<byte> dataPtr, int dataSize)
