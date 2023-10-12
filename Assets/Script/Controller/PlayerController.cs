@@ -13,7 +13,7 @@ public class PlayerController : PlayController
     [SerializeField]
     private float _xRotateMove;
     [SerializeField]
-    private float _damage = 10f;
+    private float _damage = 300f;
 
     private int _movePacketCnt = 0;
     private Text _text;
@@ -70,6 +70,17 @@ public class PlayerController : PlayController
         GameObject text_ui = GameObject.FindGameObjectWithTag("Respawn");
     }
 
+    public void Respwan(Vector3 pos, Type.State state, Type.Dir dir, Type.Dir mouseDir, Quaternion q, float hp, float mp) 
+    {
+        _agent.Warp(pos);
+        _state = state;
+        _dir = dir;
+        _mouseDir = mouseDir;
+        _hpMpController.SetHp(hp);
+        _hpMpController.SetMp(mp);
+        _death = false;
+    }
+
     public void SetAgentPos(Vector3 pos) 
     {
         GetComponent<UnityEngine.AI.NavMeshAgent>().Warp(pos);
@@ -77,6 +88,8 @@ public class PlayerController : PlayController
 
     public override void KeyBoardMove_Update_Input()
     {
+        if (_death) return;
+
         if (_coAttacked == true)
             return;
 
@@ -181,6 +194,8 @@ public class PlayerController : PlayController
 
     public override void KeyBoardMove_Update_IDLE()
     {
+        if (_death) return;
+
         if (_coAttacked == true)
             return;
 
@@ -198,6 +213,8 @@ public class PlayerController : PlayController
 
     public override void KeyBoardMove_Update_MOVE()
     {
+        if (_death) return;
+
         if (_coAttacked == true)
             return;
 
@@ -292,6 +309,8 @@ public class PlayerController : PlayController
 
     public override void UpdateAnimation()
     {
+        if (_death) return;
+
         if (_coAttacked == true)
             return;
 
@@ -510,6 +529,21 @@ public class PlayerController : PlayController
         _coAttacked = false;
     }
 
+    IEnumerator CoDeath()
+    {
+        _animator.Play("knight_death");
+        yield return new WaitForSeconds(4.0f);
+        // TODO 리스폰 패킷
+        byte[] bytes = new byte[12];
+        MemoryStream ms = new MemoryStream(bytes);
+        ms.Position = 0;
+        BinaryWriter bw = new BinaryWriter(ms);
+        bw.Write((Int16)Type.PacketProtocol.C2S_PLAYERESPAWN);
+        bw.Write((Int16)4);
+        _network.SendPacket(bytes, 4);
+
+    }
+
     public override void Attacked() 
     {
         if (_coAttacked) return;
@@ -525,5 +559,11 @@ public class PlayerController : PlayController
     public override void SetMp(float mp)
     {
         GameObject.FindGameObjectWithTag("HpMp").GetComponent<HpMpController>().SetMp(mp);
+    }
+
+    public override void Death()
+    {
+        _death = true;
+        StartCoroutine(CoDeath());
     }
 }

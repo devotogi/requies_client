@@ -56,6 +56,56 @@ public class PacketHandler
             case Type.PacketProtocol.S2C_PLAYERCHAT:
                 PacketHandler_S2C_PLAYERCHAT(dataPtr, dataSize);
                 break;
+
+            case Type.PacketProtocol.S2C_PLAYERDETH:
+                PacketHandler_S2C_PLAYERDETH(dataPtr, dataSize);
+                break;
+
+            case Type.PacketProtocol.S2C_PLAYERESPAWN:
+                PacketHandler_S2C_PLAYERESPAWN(dataPtr, dataSize);
+                break;
+        }
+    }
+
+    private void PacketHandler_S2C_PLAYERESPAWN(ArraySegment<byte> dataPtr, int dataSize)
+    {
+        MemoryStream ms = new MemoryStream(dataPtr.Array, dataPtr.Offset, dataPtr.Count);
+        BinaryReader br = new BinaryReader(ms);
+
+        Int32 playerId = br.ReadInt32();
+        Type.State state = (Type.State)br.ReadUInt16();
+        Type.Dir dir = (Type.Dir)br.ReadUInt16();
+        Type.Dir mouseDir = (Type.Dir)br.ReadUInt16();
+        float x = br.ReadSingle();
+        float y = br.ReadSingle();
+        float z = br.ReadSingle();
+        Vector3 nowPos = new Vector3(x, y, z);
+        float qx = br.ReadSingle();
+        float qy = br.ReadSingle();
+        float qz = br.ReadSingle();
+        float qw = br.ReadSingle();
+        Quaternion quaternion = new Quaternion(qx, qy, qz, qw);
+        float hp = br.ReadSingle();
+        float mp = br.ReadSingle();
+
+        Managers.Data.PlayerController.Respwan(nowPos, state, dir, mouseDir, quaternion, hp, mp);
+    }
+
+    private void PacketHandler_S2C_PLAYERDETH(ArraySegment<byte> dataPtr, int dataSize)
+    {
+        MemoryStream ms = new MemoryStream(dataPtr.Array, dataPtr.Offset, dataPtr.Count);
+        BinaryReader br = new BinaryReader(ms);
+
+        int playerId = br.ReadInt32();
+
+        if (Managers.Data.PlayerController.PlayerID == playerId)
+        {
+            Managers.Data.PlayerController.Death();
+        }
+        else
+        {
+            Managers.Data.PlayerDic.TryGetValue(playerId, out var opc);
+            opc.Death();
         }
     }
 

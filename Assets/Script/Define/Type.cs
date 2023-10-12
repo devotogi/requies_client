@@ -25,6 +25,9 @@ public class Type
         S2C_PLAYERATTACKED,
         C2S_PLAYERCHAT,
         S2C_PLAYERCHAT,
+        S2C_PLAYERDETH,
+        C2S_PLAYERESPAWN,
+        S2C_PLAYERESPAWN,
     }
     public static string IP { get { return "127.0.0.1"; } }
     public static int PORT { get { return 7777; } }

@@ -30,6 +30,8 @@ public class OtherPlayerController : PlayController
     }
     public override void KeyBoardMove_Update_IDLE()
     {
+        if (_death) return;
+
         if (_coAttacked)
             return;
 
@@ -47,6 +49,8 @@ public class OtherPlayerController : PlayController
 
     public override void KeyBoardMove_Update_MOVE()
     {
+        if (_death) return;
+
         if (_coAttacked)
             return;
 
@@ -129,6 +133,8 @@ public class OtherPlayerController : PlayController
 
     public override void UpdateAnimation()
     {
+        if (_death) return;
+
         if (_coAttacked == true)
             return;
 
@@ -195,6 +201,12 @@ public class OtherPlayerController : PlayController
         _coAttacked = false;
     }
 
+    IEnumerator CoDeath()
+    {
+        _animator.Play("knight_death");
+        yield return new WaitForSeconds(4.0f);
+    }
+
     public override void Attacked()
     {
         if (_coAttacked) return;
@@ -213,5 +225,11 @@ public class OtherPlayerController : PlayController
     {
         if (_hpController)
             _hpController.SetHp(hp);
+    }
+
+    public override void Death()
+    {
+        _death = true;
+        StartCoroutine(CoDeath());
     }
 }

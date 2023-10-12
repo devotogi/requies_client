@@ -18,6 +18,7 @@ public class PlayController : CreatureController
     protected bool _coAttack = false;
     protected bool _coAttacked = false;
     private Vector3 _mousePrevPos = Vector3.zero;
+    protected bool _death = false;
     private void OnDestroy()
     {
         if (_camera != null)
@@ -82,6 +83,8 @@ public class PlayController : CreatureController
 
     public void KeyBoardMoveUpdate() 
     {
+        if (_death) return;
+
         Vector3 prevPos = transform.position;
         Type.Dir prevDir = _dir;
         Type.State prevState = _state;
@@ -132,4 +135,5 @@ public class PlayController : CreatureController
 
     public virtual void SetHp(float hp) { }
     public virtual void SetMp(float hp) { }
+    public virtual void Death() { }
 }
