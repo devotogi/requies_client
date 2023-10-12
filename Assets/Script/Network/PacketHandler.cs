@@ -157,9 +157,12 @@ public class PacketHandler
             GameObject cameraPosGo = Managers.Resource.Instantiate("Camera/FakeCameraPos");
             cameraPosGo.GetComponent<FakeCameraPos>().Init(playerGo);
             GameObject hpObject = Managers.Resource.Instantiate("UI/HP", GameObject.FindGameObjectWithTag("Finish").transform);
+            HpController hpc = hpObject.GetComponent<HpController>();
 
-            opc.Init(quaternion, cameraPosGo.transform.GetChild(0).gameObject, hpObject.GetComponent<HpController>());
+            opc.Init(quaternion, cameraPosGo.transform.GetChild(0).gameObject, hpc);
             opc.UpdateSync(moveType, state, dir, mouseDir, nowPos, quaternion, target, localRotation);
+            opc.SetHp(hp);
+            opc.SetMp(mp);
         }
         catch (Exception e)
         {
@@ -239,9 +242,13 @@ public class PacketHandler
 
             GameObject cameraPosGo = Managers.Resource.Instantiate("Camera/FakeCameraPos");
             cameraPosGo.GetComponent<FakeCameraPos>().Init(playerGo);
-            opc.Init(cameraLocalRotation, cameraPosGo.transform.GetChild(0).gameObject, hpObject.GetComponent<HpController>());
 
+            HpController hpc = hpObject.GetComponent<HpController>();
+
+            opc.Init(cameraLocalRotation, cameraPosGo.transform.GetChild(0).gameObject, hpc);
             opc.UpdateSync(moveType, state, dir, mouseDir,startPos, cameraLocalRotation, target, localRotation);
+            opc.SetHp(hp);
+            opc.SetMp(mp);
         }
     }
 
@@ -328,6 +335,7 @@ public class PacketHandler
         GameObject cameraPosGo = Managers.Resource.Instantiate("Camera/CameraPos");
         cameraPosGo.GetComponent<CameraPos>().Init(playerGo);
         cameraPosGo.transform.GetChild(0).gameObject.AddComponent<CameraController>().Init(playerGo);
+
         pc.Init(quaternion, cameraPosGo.transform.GetChild(0).gameObject);
     }
 }

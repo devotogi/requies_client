@@ -7,6 +7,13 @@ public class OtherPlayerController : PlayController
     private float _xRotateMove;
     private float _rotateSpeed = 200.0f;
     private HpController _hpController = null;
+
+    private void LateUpdate()
+    {
+        if (_hpController != null)
+            _hpController.transform.position = Camera.main.WorldToScreenPoint(transform.position + Vector3.up * 1.9f);
+    }
+
     public override void CInit()
     {
         base.CInit();
@@ -138,10 +145,7 @@ public class OtherPlayerController : PlayController
             case Type.State.ATTACK:
                 _animator.Play("knight_attack");
                 break;
-        }
-        // Debug.Log(_hpController.transform.position);
-        if (_hpController != null)
-            _hpController.transform.position = Camera.main.WorldToScreenPoint(transform.position + new Vector3(0, 0.8f, 0));
+        } 
     }
 
     public override void MouseMove_Update_IDLE()
@@ -196,5 +200,18 @@ public class OtherPlayerController : PlayController
         if (_coAttacked) return;
         _animator.Play("knight_attacked");
         StartCoroutine(CoAttacked());
+    }
+
+    public override void Destory()
+    {
+        base.Destory();
+        if (_hpController)
+            Managers.Resource.Destory(_hpController.gameObject);
+    }
+
+    public override void SetHp(float hp)
+    {
+        if (_hpController)
+            _hpController.SetHp(hp);
     }
 }
