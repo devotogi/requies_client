@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
+using TMPro;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -50,7 +52,26 @@ public class PacketHandler
             case Type.PacketProtocol.S2C_PLAYERATTACKED:
                 PacketHandler_S2C_PLAYERATTACKED(dataPtr, dataSize);
                 break;
+
+            case Type.PacketProtocol.S2C_PLAYERCHAT:
+                PacketHandler_S2C_PLAYERCHAT(dataPtr, dataSize);
+                break;
         }
+    }
+
+    private void PacketHandler_S2C_PLAYERCHAT(ArraySegment<byte> dataPtr, int dataSize)
+    {
+        MemoryStream ms = new MemoryStream(dataPtr.Array, dataPtr.Offset, dataPtr.Count);
+        BinaryReader br = new BinaryReader(ms);
+
+        int msgSize = br.ReadInt32();
+        byte[] msgBytes = br.ReadBytes(msgSize);
+        string msg = Encoding.Unicode.GetString(msgBytes);
+
+        GameObject chatConet = GameObject.FindGameObjectWithTag("ChatContent");
+
+        GameObject textGo = Managers.Resource.Instantiate("UI/Chatting", chatConet.transform);
+        textGo.GetComponent<TMP_Text>().text = msg;
     }
 
     private void PacketHandler_S2C_PLAYERATTACKED(ArraySegment<byte> dataPtr, int dataSize)

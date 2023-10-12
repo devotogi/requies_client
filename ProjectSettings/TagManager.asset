@@ -6,6 +6,7 @@ TagManager:
   tags:
   - HpMp
   - UICamera
+  - ChatContent
   layers:
   - Default
   - TransparentFX
