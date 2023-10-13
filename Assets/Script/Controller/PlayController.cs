@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -19,6 +20,8 @@ public class PlayController : CreatureController
     protected bool _coAttacked = false;
     private Vector3 _mousePrevPos = Vector3.zero;
     protected bool _death = false;
+    protected GameObject _talk;
+
     private void OnDestroy()
     {
         if (_camera != null)
@@ -136,4 +139,20 @@ public class PlayController : CreatureController
     public virtual void SetHp(float hp) { }
     public virtual void SetMp(float hp) { }
     public virtual void Death() { }
+    public virtual void Talk(string msg) 
+    {
+        StopCoroutine("CoTalk");
+        if (_talk == null)
+            _talk = Managers.Resource.Instantiate("UI/Talk");
+
+        _talk.transform.GetChild(0).transform.GetChild(0).GetComponent<TMP_Text>().text = msg;
+        StartCoroutine(CoTalk());
+    }
+
+    IEnumerator CoTalk() 
+    {
+        yield return new WaitForSeconds(1.5f); 
+        if (_talk != null) Managers.Resource.Destory(_talk);
+        _talk = null;
+    }
 }

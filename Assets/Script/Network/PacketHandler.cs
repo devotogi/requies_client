@@ -115,9 +115,21 @@ public class PacketHandler
         BinaryReader br = new BinaryReader(ms);
 
         int playerId = br.ReadInt32();
+
         int msgSize = br.ReadInt32();
         byte[] msgBytes = br.ReadBytes(msgSize);
         string msg = Encoding.Unicode.GetString(msgBytes);
+
+        if (Managers.Data.PlayerController.PlayerID == playerId)
+        {
+            Managers.Data.PlayerController.Talk(msg);
+        }
+        else
+        {
+            Managers.Data.PlayerDic.TryGetValue(playerId, out var opc);
+            opc.Talk(msg);
+        }
+
 
         GameObject chatInput = GameObject.FindGameObjectWithTag("ChatInput");
         chatInput.GetComponent<ChatInputController>().Push(msg);
@@ -226,7 +238,7 @@ public class PacketHandler
 
             GameObject cameraPosGo = Managers.Resource.Instantiate("Camera/FakeCameraPos");
             cameraPosGo.GetComponent<FakeCameraPos>().Init(playerGo);
-            GameObject hpObject = Managers.Resource.Instantiate("UI/HP", GameObject.FindGameObjectWithTag("Finish").transform);
+            GameObject hpObject = Managers.Resource.Instantiate("UI/HP");
             HpController hpc = hpObject.GetComponent<HpController>();
 
             opc.Init(quaternion, cameraPosGo.transform.GetChild(0).gameObject, hpc);
@@ -308,7 +320,7 @@ public class PacketHandler
                 Debug.LogException(e);
             }
 
-            GameObject hpObject = Managers.Resource.Instantiate("UI/HP", GameObject.FindGameObjectWithTag("Finish").transform);
+            GameObject hpObject = Managers.Resource.Instantiate("UI/HP");
 
             GameObject cameraPosGo = Managers.Resource.Instantiate("Camera/FakeCameraPos");
             cameraPosGo.GetComponent<FakeCameraPos>().Init(playerGo);

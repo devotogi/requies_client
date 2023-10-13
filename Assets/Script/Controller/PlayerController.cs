@@ -22,6 +22,22 @@ public class PlayerController : PlayController
     private Network _network;
     HpMpController _hpMpController;
 
+    private void LateUpdate()
+    {
+        if (_talk != null)
+        {
+            _talk.transform.position = transform.position + (Vector3.up * 2.2f);
+            Camera camera = Camera.main;
+
+            if (camera != null)
+            { 
+                _talk.transform.LookAt(camera.transform);
+      
+            }
+
+        } 
+    }
+
     void OnDrawGizmos()
     {
 

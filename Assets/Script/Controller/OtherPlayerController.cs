@@ -11,7 +11,20 @@ public class OtherPlayerController : PlayController
     private void LateUpdate()
     {
         if (_hpController != null)
-            _hpController.transform.position = Camera.main.WorldToScreenPoint(transform.position + Vector3.up * 1.9f);
+        { 
+            _hpController.transform.position = transform.position + Vector3.up * 1.9f;
+            _hpController.LookMainCamera();
+        }
+
+        if (_talk != null)
+        {
+            _talk.transform.position = transform.position + (Vector3.up * 2.2f);
+
+            Camera camera = Camera.main;
+
+            if (camera != null)
+                _talk.transform.LookAt(camera.transform);
+        }
     }
 
     public override void CInit()
