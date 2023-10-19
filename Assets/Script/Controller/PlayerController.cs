@@ -40,7 +40,6 @@ public class PlayerController : PlayController
 
     void OnDrawGizmos()
     {
-
         float maxDistance = 2;
         RaycastHit hit;
         int layerMask = 1 << LayerMask.NameToLayer("Enemy");

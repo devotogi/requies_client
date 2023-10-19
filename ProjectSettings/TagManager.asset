@@ -4,28 +4,27 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - HpMp
-  - UICamera
-  - ChatContent
   - ChatInput
+  - HpMp
+  - ChatContent
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - Enemy
+  - 
   - Water
   - UI
-  - OverUI
   - 
+  - WALL
+  - Reflection_Probes
+  - Lighting
+  - Props
+  - ReflectedInWater
+  - Ground
+  - AccessibleVolume
+  - PostProcessing
   - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - MainGround
   - 
   - 
   - 

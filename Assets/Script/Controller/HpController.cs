@@ -36,6 +36,8 @@ public class HpController : MonoBehaviour
         if (_camera == null)
             return;
 
-        transform.LookAt(_camera.transform.position);
+        Vector3 dir = _camera.transform.position;
+        dir.y = 0;
+        transform.LookAt(dir);
     }
 }

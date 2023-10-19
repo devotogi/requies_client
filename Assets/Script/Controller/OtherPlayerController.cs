@@ -23,7 +23,11 @@ public class OtherPlayerController : PlayController
             Camera camera = Camera.main;
 
             if (camera != null)
-                _talk.transform.LookAt(camera.transform);
+            {
+                Vector3 dir = camera.transform.position;
+                dir.y = 0;
+                _talk.transform.LookAt(dir);
+            }
         }
     }
 

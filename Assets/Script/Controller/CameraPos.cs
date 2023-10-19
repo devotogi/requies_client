@@ -6,6 +6,7 @@ public class CameraPos : MonoBehaviour
 {
     private GameObject _player;
     private Vector3 _delta;
+    public Vector3 _delta2;
     public void Init(GameObject player)
     {
         _player = player;

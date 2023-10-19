@@ -141,9 +141,13 @@ public class PlayController : CreatureController
     public virtual void Death() { }
     public virtual void Talk(string msg) 
     {
-        StopCoroutine("CoTalk");
-        if (_talk == null)
-            _talk = Managers.Resource.Instantiate("UI/Talk");
+        if (_talk != null) 
+        {
+            Managers.Resource.Destory(_talk);
+            _talk = null;
+        }
+
+        _talk = Managers.Resource.Instantiate("UI/Talk");
 
         _talk.transform.GetChild(0).transform.GetChild(0).GetComponent<TMP_Text>().text = msg;
         StartCoroutine(CoTalk());
