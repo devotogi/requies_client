@@ -56,5 +56,11 @@ public class Type
         KeyBoard,
         Mouse
     }
+
+    public enum SceneType : Int32 
+    {
+        Debug,
+        Run
+    }
 }
 

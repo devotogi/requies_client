@@ -48,7 +48,7 @@ public class CameraController : MonoBehaviour
             {
                 Material Mat = ObstacleRenderer.material;
                 Color matColor = Mat.color;
-                matColor.a = 0.5f;
+                matColor.a = 0.2f;
                 Mat.color = matColor;
 
                 if (_renderers.Contains(ObstacleRenderer) == false)

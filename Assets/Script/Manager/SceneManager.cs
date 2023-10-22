@@ -6,24 +6,27 @@ using UnityEngine;
 using Object = UnityEngine.Object;
 
 public class SceneManager : MonoBehaviour
-{ 
+{
+    [SerializeField]
+    public Type.SceneType _type = Type.SceneType.Run;
+
     void Awake()
     {
-        GameObject network = new GameObject();
-        network.name = "Network";
-        network.AddComponent<Network>();
+        switch (_type) 
+        {
+            case Type.SceneType.Debug:
+                Managers.Resource.Instantiate("Object/MapMaker");
+                Managers.Resource.Instantiate("Camera/DevCamera");
 
-        //for (int z = 0; z <= 256; z++)
-        //{
-        //    for (int x = 0; x <= 256; x++)
-        //    {
-        //        if (z % 32 == 0 || x % 32 == 0) 
-        //        {
-        //            GameObject wallPrefab = Resources.Load<GameObject>($"Prefabs/WALL");
-        //            GameObject wallgo = Object.Instantiate(wallPrefab);
-        //            wallgo.transform.position = new Vector3(x, 0, z);
-        //        }
-        //    }
-        //}
+                break;
+
+            case Type.SceneType.Run:
+                GameObject network = new GameObject();
+                network.name = "Network";
+                network.AddComponent<Network>();
+
+                Managers.Resource.Instantiate("UI/PlayerUI");
+                break;
+        }
     }
 }
