@@ -24,12 +24,16 @@ public class MapMaker : MonoBehaviour
             RaycastHit hit;
             for (int x = 0; x <= 256; x++)
             {
-                transform.position = new Vector3(x + 0.5f, 30, z + 0.5f);
+                transform.position = new Vector3(x + 0.5f, 100, z + 0.5f);
 
-                bool isHit = Physics.BoxCast(transform.position, transform.localScale / 2, Vector3.down, out hit, transform.rotation, 100f, LayerMask.GetMask("WALL"));
+                bool isHit = Physics.BoxCast(transform.position, transform.localScale / 2, Vector3.down, out hit, transform.rotation, 100f, LayerMask.GetMask("WALL") | LayerMask.GetMask("MainGround"));
 
                 if (isHit) 
                 {
+                    const int ground = 16;
+                    if (hit.transform.gameObject.layer == ground && hit.point.y < 1)
+                        continue;
+
                     map[z,x] = 1;
                     Vector3 debugCube = new Vector3(x + 0.5f, 0, z + 0.5f);
                     keys.Add(debugCube);
@@ -78,6 +82,11 @@ public class MapMaker : MonoBehaviour
         {
             for (int x = 0; x <= 256; x++)
             {
+                if (map[z, x] == 1) 
+                {
+                    int b = 3;
+                }
+
                 bw.Write((Int32)map[z, x]); // 4 * 257 * 257 = 264,196
             }
         }
