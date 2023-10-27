@@ -28,9 +28,12 @@ public class Type
         S2C_PLAYERDETH,
         C2S_PLAYERESPAWN,
         S2C_PLAYERESPAWN,
+        S2C_MONSTERSPAWN,
+        S2C_MONSTERREMOVELIST,
+        S2C_MONSTERRENEWLIST,
     }
-    public static string IP { get { return "127.0.0.1"; } }
-    public static int PORT { get { return 7777; } }
+    public static string IP { get { return "58.236.130.58"; } }
+    public static int PORT { get { return 30002; } }
 
     public enum State : UInt16
     {

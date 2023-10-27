@@ -64,7 +64,71 @@ public class PacketHandler
             case Type.PacketProtocol.S2C_PLAYERESPAWN:
                 PacketHandler_S2C_PLAYERESPAWN(dataPtr, dataSize);
                 break;
+
+            case Type.PacketProtocol.S2C_MONSTERSPAWN:
+                PacketHandler_S2C_MONSTERSPAWN(dataPtr, dataSize);
+                break;
+
+            case Type.PacketProtocol.S2C_MONSTERREMOVELIST:
+                PacketHandler_S2C_MONSTERREMOVELIST(dataPtr, dataSize);
+                break;
+
+            case Type.PacketProtocol.S2C_MONSTERRENEWLIST:
+                PacketHandler_S2C_MONSTERRENEWLIST(dataPtr, dataSize);
+                break;
         }
+    }
+
+    private void PacketHandler_S2C_MONSTERRENEWLIST(ArraySegment<byte> dataPtr, int dataSize)
+    {
+        MemoryStream ms = new MemoryStream(dataPtr.Array, dataPtr.Offset, dataPtr.Count);
+        BinaryReader br = new BinaryReader(ms);
+
+        Int32 cnt = br.ReadInt32();
+
+        for (int i = 0; i < cnt; i++)
+        {
+            Int32 monsterId = br.ReadInt32();
+            Int32 monsterType = br.ReadInt32();
+            float x = br.ReadSingle();
+            float y = br.ReadSingle();
+            float z = br.ReadSingle();
+            GameObject bear = Managers.Resource.Instantiate("Monster/Bear");
+            bear.transform.position = new Vector3(x, y, z);
+
+            Managers.Data.MonsterDic.Add(monsterId, bear);
+        }
+    }
+
+    private void PacketHandler_S2C_MONSTERREMOVELIST(ArraySegment<byte> dataPtr, int dataSize)
+    {
+        MemoryStream ms = new MemoryStream(dataPtr.Array, dataPtr.Offset, dataPtr.Count);
+        BinaryReader br = new BinaryReader(ms);
+
+        Int32 cnt = br.ReadInt32();
+
+        for (int i = 0; i < cnt; i++)
+        {
+            int monsterId = br.ReadInt32();
+            Managers.Data.MonsterDic.TryGetValue(monsterId, out var monster);
+            Managers.Resource.Destory(monster);
+            Managers.Data.MonsterDic.Remove(monsterId);
+        }
+    }
+
+    private void PacketHandler_S2C_MONSTERSPAWN(ArraySegment<byte> dataPtr, int dataSize)
+    {
+        MemoryStream ms = new MemoryStream(dataPtr.Array, dataPtr.Offset, dataPtr.Count);
+        BinaryReader br = new BinaryReader(ms);
+
+        Int32 monsterId = br.ReadInt32();
+        Int32 monsterType = br.ReadInt32();
+        float x = br.ReadSingle();
+        float y = br.ReadSingle();
+        float z = br.ReadSingle();
+
+        GameObject bear = Managers.Resource.Instantiate("Monster/Bear");
+        bear.transform.position = new Vector3(x, y, z);
     }
 
     private void PacketHandler_S2C_PLAYERESPAWN(ArraySegment<byte> dataPtr, int dataSize)

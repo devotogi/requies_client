@@ -44,16 +44,29 @@ public class MapMaker : MonoBehaviour
 
     void OnDrawGizmos()
     {
-        for (int i = 0; i <= 256; i++) 
+        //for (int i = 0; i <= 256; i++) 
+        //{
+        //    Debug.DrawLine(new Vector3(i, 0, 0), new Vector3(i, 0, 256), Color.blue);
+        //    Debug.DrawLine(new Vector3(0, 0, i), new Vector3(256, 0, i), Color.blue);
+        //}
+
+        for (int j = 0; j <= 8; j++)
         {
-            Debug.DrawLine(new Vector3(i, 0, 0), new Vector3(i, 0, 256), Color.blue);
-            Debug.DrawLine(new Vector3(0, 0, i), new Vector3(256, 0, i), Color.blue);
+            int x = j * 32;
+            Debug.DrawLine(new Vector3(x, 0, 0), new Vector3(x, 0, 256), Color.blue);
+
         }
 
-        foreach (var v3 in keys) 
+        for (int i = 0; i <= 8; i++)
         {
-            Gizmos.DrawCube(v3, new Vector3(1, 1, 1));
+            int z = i * 32;
+            Debug.DrawLine(new Vector3(0, 0, z), new Vector3(256, 0, z), Color.blue);
         }
+
+        //foreach (var v3 in keys) 
+        //{
+        //    Gizmos.DrawCube(v3, new Vector3(1, 1, 1));
+        //}
     }
 
     public void AddBlock(Vector3 pos) 
@@ -82,11 +95,6 @@ public class MapMaker : MonoBehaviour
         {
             for (int x = 0; x <= 256; x++)
             {
-                if (map[z, x] == 1) 
-                {
-                    int b = 3;
-                }
-
                 bw.Write((Int32)map[z, x]); // 4 * 257 * 257 = 264,196
             }
         }
