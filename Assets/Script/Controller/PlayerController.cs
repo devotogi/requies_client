@@ -511,25 +511,54 @@ public class PlayerController : PlayController
         yield return new WaitForSeconds(0.1f);
 
         RaycastHit hit;
-        int layerMask = 1 << LayerMask.NameToLayer("Enemy");
+        int playerLayerMask = 1 << LayerMask.NameToLayer("Player");
+        int monsterLayerMask = 1 << LayerMask.NameToLayer("Enemy");
 
-        if (Physics.SphereCast(transform.position + Vector3.up, transform.lossyScale.x / 2, transform.TransformDirection(Vector3.forward), out hit, 2, layerMask))
+        if (Physics.SphereCast(transform.position + Vector3.up, transform.lossyScale.x / 2, transform.TransformDirection(Vector3.forward), out hit, 2, (playerLayerMask | monsterLayerMask)))
         {
             Gizmos.color = Color.red;
 
-            PlayController pc = hit.transform.gameObject.GetComponent<PlayController>();
-            Int32 otherPlayerId = pc.PlayerID;
+            int targetLayer = hit.transform.gameObject.layer;
 
-            byte[] bytes = new byte[12];
-            MemoryStream ms = new MemoryStream(bytes);
-            ms.Position = 0;
+            if (targetLayer == 17)
+            {
+                PlayController pc = hit.transform.gameObject.GetComponent<PlayController>();
+                Int32 otherPlayerId = pc.PlayerID;
 
-            BinaryWriter bw = new BinaryWriter(ms);
-            bw.Write((Int16)Type.PacketProtocol.C2S_PLAYERATTACK);
-            bw.Write((Int16)12);
-            bw.Write((Int32)otherPlayerId);
-            bw.Write((Int32)_damage);
-            _network.SendPacket(bytes, 12);
+                byte[] bytes = new byte[12];
+                MemoryStream ms = new MemoryStream(bytes);
+                ms.Position = 0;
+
+                BinaryWriter bw = new BinaryWriter(ms);
+                bw.Write((Int16)Type.PacketProtocol.C2S_PLAYERATTACK);
+                bw.Write((Int16)12);
+                bw.Write((Int32)otherPlayerId);
+                bw.Write((Int32)_damage);
+                _network.SendPacket(bytes, 12);
+            }
+            else if (targetLayer == 15) 
+            {
+                float x =  hit.transform.position.x;
+                float y =  hit.transform.position.y;
+                float z =  hit.transform.position.z;
+
+                MonsterController mc = hit.transform.gameObject.GetComponent<MonsterController>();
+                Int32 monsterId = mc.MonsterId;
+
+                byte[] bytes = new byte[24];
+                MemoryStream ms = new MemoryStream(bytes);
+                ms.Position = 0;
+
+                BinaryWriter bw = new BinaryWriter(ms);
+                bw.Write((Int16)Type.PacketProtocol.C2S_MONSTERATTACKED);
+                bw.Write((Int16)24);
+                bw.Write((Int32)monsterId);
+                bw.Write((float)x);
+                bw.Write((float)y);
+                bw.Write((float)z);
+                bw.Write((Int32)_damage);
+                _network.SendPacket(bytes, 24);
+            }
         }
         yield return new WaitForSeconds(0.5f);
         _coAttack = false;

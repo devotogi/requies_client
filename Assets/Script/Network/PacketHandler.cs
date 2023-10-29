@@ -76,7 +76,40 @@ public class PacketHandler
             case Type.PacketProtocol.S2C_MONSTERRENEWLIST:
                 PacketHandler_S2C_MONSTERRENEWLIST(dataPtr, dataSize);
                 break;
+            
+            case Type.PacketProtocol.S2C_MONSTERATTACKED:
+                PacketHandler_S2C_MONSTERATTACKED(dataPtr, dataSize);
+                break;
+
+            case Type.PacketProtocol.S2C_MONSTERDEAD:
+                PacketHandler_S2C_MONSTERDEAD(dataPtr, dataSize);
+                break;
         }
+    }
+
+    private void PacketHandler_S2C_MONSTERDEAD(ArraySegment<byte> dataPtr, int dataSize)
+    {
+        MemoryStream ms = new MemoryStream(dataPtr.Array, dataPtr.Offset, dataPtr.Count);
+        BinaryReader br = new BinaryReader(ms);
+
+        int monsterId = br.ReadInt32();
+
+        Managers.Data.MonsterDic.TryGetValue(monsterId, out var monster);
+        Managers.Resource.Destory(monster.gameObject);
+        Managers.Data.MonsterDic.Remove(monsterId);
+    }
+
+    private void PacketHandler_S2C_MONSTERATTACKED(ArraySegment<byte> dataPtr, int dataSize)
+    {
+        MemoryStream ms = new MemoryStream(dataPtr.Array, dataPtr.Offset, dataPtr.Count);
+        BinaryReader br = new BinaryReader(ms);
+
+        int monsterId = br.ReadInt32();
+        float x = br.ReadSingle();
+        float y = br.ReadSingle();
+        float z = br.ReadSingle();
+        Type.MonsterType type = (Type.MonsterType)br.ReadInt32();
+        int hp = br.ReadInt32();
     }
 
     private void PacketHandler_S2C_MONSTERRENEWLIST(ArraySegment<byte> dataPtr, int dataSize)
@@ -94,8 +127,11 @@ public class PacketHandler
             float y = br.ReadSingle();
             float z = br.ReadSingle();
             GameObject bear = Managers.Resource.Instantiate("Monster/Bear");
-            bear.transform.position = new Vector3(x, y, z);
+            MonsterController mc = bear.AddComponent<MonsterController>();
 
+            mc.MonsterId = monsterId;
+            mc.MonsterType = (Type.MonsterType)monsterType;
+            bear.transform.position = new Vector3(x, y, z);
             Managers.Data.MonsterDic.Add(monsterId, bear);
         }
     }
@@ -128,7 +164,13 @@ public class PacketHandler
         float z = br.ReadSingle();
 
         GameObject bear = Managers.Resource.Instantiate("Monster/Bear");
+        MonsterController mc = bear.AddComponent<MonsterController>();
+
+        mc.MonsterId = monsterId;
+        mc.MonsterType = (Type.MonsterType) monsterType;
         bear.transform.position = new Vector3(x, y, z);
+
+        Managers.Data.MonsterDic.Add(monsterId, bear);
     }
 
     private void PacketHandler_S2C_PLAYERESPAWN(ArraySegment<byte> dataPtr, int dataSize)

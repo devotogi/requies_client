@@ -31,6 +31,9 @@ public class Type
         S2C_MONSTERSPAWN,
         S2C_MONSTERREMOVELIST,
         S2C_MONSTERRENEWLIST,
+        C2S_MONSTERATTACKED,
+        S2C_MONSTERATTACKED,
+        S2C_MONSTERDEAD,
     }
     public static string IP { get { return "58.236.130.58"; } }
     public static int PORT { get { return 30002; } }
@@ -64,6 +67,11 @@ public class Type
     {
         Debug,
         Run
+    }
+
+    public enum MonsterType : Int32 
+    {
+        Bear,
     }
 }
 
