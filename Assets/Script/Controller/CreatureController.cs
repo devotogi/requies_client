@@ -18,6 +18,11 @@ public class CreatureController : MonoBehaviour
         
     }
 
+    void OnDestroy()
+    {
+        Destory();   
+    }
+
     public virtual void CInit() 
     {
         _animator = GetComponent<Animator>();

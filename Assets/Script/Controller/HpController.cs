@@ -17,6 +17,12 @@ public class HpController : MonoBehaviour
         _camera = Camera.main;  
     }
 
+    public void SetHPMax(float hpMax) 
+    {
+        _hpMax = hpMax;
+    }
+
+
     public void SetHp(float hp)
     {
         _hp = hp;
