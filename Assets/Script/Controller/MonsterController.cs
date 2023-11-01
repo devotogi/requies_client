@@ -87,6 +87,7 @@ public class MonsterController : CreatureController
                 break;
 
             case Type.State.ATTACK:
+                _animator.Play("Attack1");
                 break;
 
             case Type.State.ATTACKED:

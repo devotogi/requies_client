@@ -103,9 +103,14 @@ public class PacketHandler
         float y = br.ReadSingle();
         float z = br.ReadSingle();
         float hp = br.ReadSingle();
+        float lx = br.ReadSingle();
+        float ly = br.ReadSingle();
+        float lz = br.ReadSingle();
         Vector3 pos = new Vector3(x, y, z);
+        Vector3 look = new Vector3(lx, ly, lz);
         Managers.Data.MonsterDic.TryGetValue(monsterId, out var monster);
         monster.GetComponent<MonsterController>().Sync(monsterState, pos, hp);
+        monster.transform.LookAt(look);
     }
 
     private void PacketHandler_S2C_MONSTERDEAD(ArraySegment<byte> dataPtr, int dataSize)
