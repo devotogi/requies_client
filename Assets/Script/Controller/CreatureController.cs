@@ -15,7 +15,7 @@ public class CreatureController : MonoBehaviour
 
     void Update()
     {
-        
+           
     }
 
     void OnDestroy()
