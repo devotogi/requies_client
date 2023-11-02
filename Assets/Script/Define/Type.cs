@@ -36,8 +36,8 @@ public class Type
         S2C_MONSTERDEAD,
         S2C_MONSTERSYNC,
     }
-    public static string IP { get { return "127.0.0.1"; } }
-    public static int PORT { get { return 7777; } }
+    public static string IP { get { return "58.236.130.58"; } }
+    public static int PORT { get { return 30002; } }
 
     public enum State : UInt16
     {
