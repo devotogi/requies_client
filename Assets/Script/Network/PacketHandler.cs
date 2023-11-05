@@ -89,16 +89,25 @@ public class PacketHandler
                 PacketHandler_S2C_MONSTERSYNC(dataPtr, dataSize);
                 break;
 
+            case Type.PacketProtocol.S2C_NEWMONSTER:
+                PacketHandler_S2C_NEWMONSTER(dataPtr, dataSize);
+                break;
+
+            case Type.PacketProtocol.S2C_DELETEMONSTER:
+                PacketHandler_S2C_DELETEMONSTER(dataPtr, dataSize);
+                break;
+
         }
     }
 
-    private void PacketHandler_S2C_MONSTERSYNC(ArraySegment<byte> dataPtr, int dataSize)
+    private void PacketHandler_S2C_DELETEMONSTER(ArraySegment<byte> dataPtr, int dataSize)
     {
         MemoryStream ms = new MemoryStream(dataPtr.Array, dataPtr.Offset, dataPtr.Count);
         BinaryReader br = new BinaryReader(ms);
 
-        Type.State monsterState = (Type.State) br.ReadInt16();
+        Type.State monsterState = (Type.State)br.ReadInt16();
         int monsterId = br.ReadInt32();
+        int monsterType = br.ReadInt32();
         float x = br.ReadSingle();
         float y = br.ReadSingle();
         float z = br.ReadSingle();
@@ -108,9 +117,71 @@ public class PacketHandler
         float lz = br.ReadSingle();
         Vector3 pos = new Vector3(x, y, z);
         Vector3 look = new Vector3(lx, ly, lz);
+
         Managers.Data.MonsterDic.TryGetValue(monsterId, out var monster);
-        monster.GetComponent<MonsterController>().Sync(monsterState, pos, hp);
-        monster.transform.LookAt(look);
+        Managers.Resource.Destory(monster.gameObject);
+        Managers.Data.MonsterDic.Remove(monsterId);
+    }
+
+    private void PacketHandler_S2C_NEWMONSTER(ArraySegment<byte> dataPtr, int dataSize)
+    {
+        MemoryStream ms = new MemoryStream(dataPtr.Array, dataPtr.Offset, dataPtr.Count);
+        BinaryReader br = new BinaryReader(ms);
+
+        Type.State monsterState = (Type.State)br.ReadInt16();
+        int monsterId = br.ReadInt32();
+        int monsterType = br.ReadInt32();
+        float x = br.ReadSingle();
+        float y = br.ReadSingle();
+        float z = br.ReadSingle();
+        float hp = br.ReadSingle();
+        float lx = br.ReadSingle();
+        float ly = br.ReadSingle();
+        float lz = br.ReadSingle();
+        Vector3 pos = new Vector3(x, y, z);
+        Vector3 look = new Vector3(lx, ly, lz);
+
+        GameObject bear = Managers.Resource.Instantiate("Monster/Bear");
+        MonsterController mc = bear.AddComponent<MonsterController>();
+        GameObject hpObject = Managers.Resource.Instantiate("UI/HP");
+        HpController hpc = hpObject.GetComponent<HpController>();
+        mc.HPC = hpc;
+
+        mc.SetHp(hp);
+        mc.MonsterId = monsterId;
+        mc.MonsterType = (Type.MonsterType)monsterType;
+        bear.transform.position = pos;
+
+        Managers.Data.MonsterDic.Add(monsterId, bear);
+        mc.GetComponent<MonsterController>().Sync(monsterState, pos, hp, look);
+    }
+
+    private void PacketHandler_S2C_MONSTERSYNC(ArraySegment<byte> dataPtr, int dataSize)
+    {
+        MemoryStream ms = new MemoryStream(dataPtr.Array, dataPtr.Offset, dataPtr.Count);
+        BinaryReader br = new BinaryReader(ms);
+        int monsterId = 0;
+        try
+        {
+            Type.State monsterState = (Type.State)br.ReadInt16();
+            monsterId = br.ReadInt32();
+            float x = br.ReadSingle();
+            float y = br.ReadSingle();
+            float z = br.ReadSingle();
+            float hp = br.ReadSingle();
+            float lx = br.ReadSingle();
+            float ly = br.ReadSingle();
+            float lz = br.ReadSingle();
+            Vector3 pos = new Vector3(x, y, z);
+            Vector3 look = new Vector3(lx, ly, lz);
+            Managers.Data.MonsterDic.TryGetValue(monsterId, out var monster);
+            monster.GetComponent<MonsterController>().Sync(monsterState, pos, hp, look);
+            monster.transform.eulerAngles = look;
+        }
+        catch (Exception e)
+        {
+            Debug.Log(monsterId);
+        }
     }
 
     private void PacketHandler_S2C_MONSTERDEAD(ArraySegment<byte> dataPtr, int dataSize)
@@ -138,10 +209,14 @@ public class PacketHandler
         float z = br.ReadSingle();
         Vector3 pos = new Vector3(x, y, z);
         float hp = br.ReadSingle();
+        float lx = br.ReadSingle();
+        float ly = br.ReadSingle();
+        float lz = br.ReadSingle();
+        Vector3 look = new Vector3(lx, ly, lz);
 
         Managers.Data.MonsterDic.TryGetValue(monsterId, out var monster);
         MonsterController mc = monster.GetComponent<MonsterController>();
-        mc.Sync(monsterState, pos, hp);   
+        mc.Sync(monsterState, pos, hp, look);   
     }
 
     private void PacketHandler_S2C_MONSTERRENEWLIST(ArraySegment<byte> dataPtr, int dataSize)

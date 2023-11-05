@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class MonsterController : CreatureController
 {
+    public float rotateSpeed = 3.0f;       // 회전 속도
     public int MonsterId { get { return _monsterId; } set { _monsterId = value; } }
     public Type.MonsterType MonsterType {get { return _monsterType; } set { _monsterType = value; } }
     public float HP { get { return _hp; } set { _hp = value; } }
@@ -12,7 +13,8 @@ public class MonsterController : CreatureController
     private int _monsterId;
     private float _hp;
     private HpController _hpController = null;
-
+    private Vector3 _dir = Vector3.zero;
+    private float _speed = 2.5f;
     private void LateUpdate()
     {
         if (_hpController != null)
@@ -50,12 +52,15 @@ public class MonsterController : CreatureController
         UpdateAnimation();
     }
 
-    internal void Sync(Type.State monsterState, Vector3 pos, float hp)
+    internal void Sync(Type.State monsterState, Vector3 pos, float hp, Vector3 dir)
     {
         _state = monsterState;
         transform.position = pos;
         _hp = hp;
+        _dir = dir;
+        transform.rotation = Quaternion.LookRotation(_dir);
         SetHp(hp);
+
     }
 
     void Update_IDLE() 
@@ -65,13 +70,15 @@ public class MonsterController : CreatureController
 
     void Update_MOVE() 
     {
-    
+        transform.rotation = Quaternion.LookRotation(_dir).normalized;
+        transform.position += (_dir * Time.deltaTime * _speed); 
     }
     
     void Update_ATTACK() 
     {
-    
+        transform.rotation = Quaternion.LookRotation(_dir);
     }
+
     void Update_ATTACKED() { }
     void Update_DEATH() { }
 
@@ -84,6 +91,7 @@ public class MonsterController : CreatureController
                 break;
 
             case Type.State.MOVE:
+                _animator.Play("WalkForward");
                 break;
 
             case Type.State.ATTACK:
