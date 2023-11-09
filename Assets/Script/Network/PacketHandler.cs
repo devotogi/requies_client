@@ -270,24 +270,31 @@ public class PacketHandler
         MemoryStream ms = new MemoryStream(dataPtr.Array, dataPtr.Offset, dataPtr.Count);
         BinaryReader br = new BinaryReader(ms);
 
+        Type.State monsterState = (Type.State)br.ReadInt16();
         Int32 monsterId = br.ReadInt32();
         Int32 monsterType = br.ReadInt32();
         float x = br.ReadSingle();
         float y = br.ReadSingle();
         float z = br.ReadSingle();
         float hp = br.ReadSingle();
+        float lx = br.ReadSingle();
+        float ly = br.ReadSingle();
+        float lz = br.ReadSingle();
+        Vector3 pos = new Vector3(x, y, z);
+        Vector3 look = new Vector3(lx, ly, lz);
+
         GameObject bear = Managers.Resource.Instantiate("Monster/Bear");
         MonsterController mc = bear.AddComponent<MonsterController>();
-
         GameObject hpObject = Managers.Resource.Instantiate("UI/HP");
         HpController hpc = hpObject.GetComponent<HpController>();
+
         mc.HPC = hpc;
         mc.MonsterId = monsterId;
         mc.MonsterType = (Type.MonsterType) monsterType;
-        mc.SetHp(hp);
-        bear.transform.position = new Vector3(x, y, z);
+        bear.transform.position = pos;
 
         Managers.Data.MonsterDic.Add(monsterId, bear);
+        mc.GetComponent<MonsterController>().Sync(monsterState, pos, hp, look);
     }
 
     private void PacketHandler_S2C_PLAYERESPAWN(ArraySegment<byte> dataPtr, int dataSize)
