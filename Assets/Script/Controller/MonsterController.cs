@@ -14,7 +14,9 @@ public class MonsterController : CreatureController
     private float _hp;
     private HpController _hpController = null;
     private Vector3 _dir = Vector3.zero;
-    private float _speed = 2.5f;
+    private float _speed = 1.5f;
+    private Vector3 _dest;
+    private List<Vector2Int> _conner = new List<Vector2Int>();
     private void LateUpdate()
     {
         if (_hpController != null)
@@ -52,14 +54,16 @@ public class MonsterController : CreatureController
         UpdateAnimation();
     }
 
-    internal void Sync(Type.State monsterState, Vector3 pos, float hp, Vector3 dir)
+    internal void Sync(Type.State monsterState, Vector3 pos, float hp, Vector3 dir, Vector3 dest, List<Vector2Int> conner)
     {
         _state = monsterState;
         transform.position = pos;
         _hp = hp;
         _dir = dir;
         transform.rotation = Quaternion.LookRotation(_dir);
+        _dest = dest; 
         SetHp(hp);
+        _conner = conner;
 
     }
 
@@ -71,7 +75,22 @@ public class MonsterController : CreatureController
     void Update_MOVE() 
     {
         transform.rotation = Quaternion.LookRotation(_dir).normalized;
-        transform.position += (_dir * Time.deltaTime * _speed); 
+        transform.position += (_dir * Time.deltaTime * _speed);
+
+
+        Vector3 dest = new Vector3(_conner[0].x + 0.5f, 0, _conner[0].y + 0.5f);
+        Vector3 destV= dest - transform.position;
+        _dir = destV.normalized;
+        float distF = destV.magnitude;
+
+        if (distF <= 0.05)
+        {
+            transform.position = dest;
+            _conner.RemoveAt(0);
+
+            if (_conner.Count == 0) 
+                _state = Type.State.IDLE;
+        }
     }
     
     void Update_ATTACK() 

@@ -49,6 +49,9 @@ public class Type
         ATTACKED,
         DEATH,
         STATE_NONE,
+        COOL_TIME,
+        PATROL,
+        TRACE,
     }
     public enum Dir : UInt16
     {

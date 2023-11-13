@@ -47,7 +47,6 @@ public class DevCameraController : MonoBehaviour
             if (Physics.Raycast(ray, out hit, Mathf.Infinity,LayerMask.GetMask("MainGround"))) 
             {
                 Vector3 add = new Vector3(((int)hit.point.x) + 0.5f, 0, ((int)hit.point.z) + 0.5f);
-                Debug.Log(add);
                 _mapMaker.AddBlock(add);
             }
         }
@@ -59,7 +58,6 @@ public class DevCameraController : MonoBehaviour
             if (Physics.Raycast(ray, out hit, Mathf.Infinity,LayerMask.GetMask("MainGround")))
             {
                 Vector3 remove = new Vector3(((int)hit.point.x) + 0.5f, 0, ((int)hit.point.z) + 0.5f);
-                Debug.Log(remove);
                 _mapMaker.RemoveBlock(remove);
             }
         }
