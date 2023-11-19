@@ -7,6 +7,7 @@ public class CreatureController : MonoBehaviour
     protected Type.Dir _dir = Type.Dir.NONE;
     protected Type.State _state = Type.State.IDLE;
     protected Animator _animator;
+    protected GameObject _attackedDamge = null;
 
     void Start()
     {

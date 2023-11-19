@@ -161,7 +161,7 @@ public class PacketHandler
         MemoryStream ms = new MemoryStream(dataPtr.Array, dataPtr.Offset, dataPtr.Count);
         BinaryReader br = new BinaryReader(ms);
         int monsterId = 0;
-        Debug.Log("MonsterSync");
+
         try
         {
             Type.State monsterState = (Type.State)br.ReadInt16();
@@ -188,10 +188,21 @@ public class PacketHandler
                 conner.Add(new Vector2Int(_x, _z));
             }
 
+            int cnt = br.ReadInt32();
 
             Vector3 pos = new Vector3(x, y, z);
             Vector3 look = new Vector3(lx, ly, lz);
             Vector3 dest = new Vector3(dx, dy, dz);
+
+            Vector3 damgeSpawnPos = new Vector3(x, y+ 2.0f, z);
+
+            for (int i = 0; i < cnt; i++)
+            {
+                int damge = br.ReadInt32();
+                Damage damageText = Managers.Resource.Instantiate("UI/DamageText").GetComponent<Damage>();
+                damageText.Init(damgeSpawnPos, damge);
+            }
+
             Managers.Data.MonsterDic.TryGetValue(monsterId, out var monster);
             monster.GetComponent<MonsterController>().Sync(monsterState, pos, hp, look, dest, conner);
    
