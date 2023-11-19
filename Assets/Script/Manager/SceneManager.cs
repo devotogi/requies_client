@@ -26,6 +26,20 @@ public class SceneManager : MonoBehaviour
                 network.AddComponent<Network>();
 
                 Managers.Resource.Instantiate("UI/PlayerUI");
+
+                for (int z = 0; z <= 256; z += 32)
+                {
+                    for (int x = 0; x <= 256; x++) 
+                    {
+                        GameObject gox = Managers.Resource.Instantiate("Object/WALL");
+                        gox.transform.position = new Vector3(x, 0, z);
+
+                        GameObject goz = Managers.Resource.Instantiate("Object/WALL");
+                        goz.transform.position = new Vector3(z, 0, x);
+                    }
+                }
+
+           
                 break;
         }
     }

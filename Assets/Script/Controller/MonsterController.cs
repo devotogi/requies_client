@@ -122,6 +122,7 @@ public class MonsterController : CreatureController
                 break;
 
             case Type.State.DEATH:
+                _animator.Play("Death");
                 break;
         }
     }
@@ -136,5 +137,17 @@ public class MonsterController : CreatureController
     {
         if (_hpController)
             _hpController.SetHp(hp);
+    }
+
+    public void Dead() 
+    {
+        _state = Type.State.DEATH;
+        StartCoroutine(CoDead());
+    }
+
+    IEnumerator CoDead() 
+    {
+        yield return new WaitForSeconds(3.5f);
+        Managers.Resource.Destory(gameObject);
     }
 }

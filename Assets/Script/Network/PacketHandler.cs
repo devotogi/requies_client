@@ -97,7 +97,21 @@ public class PacketHandler
                 PacketHandler_S2C_DELETEMONSTER(dataPtr, dataSize);
                 break;
 
+            case Type.PacketProtocol.S2C_MONSTERDEADCLIENT:
+                PacketHandler_S2C_MONSTERDEADCLIENT(dataPtr, dataSize);
+                break;
         }
+    }
+
+    private void PacketHandler_S2C_MONSTERDEADCLIENT(ArraySegment<byte> dataPtr, int dataSize)
+    {
+        MemoryStream ms = new MemoryStream(dataPtr.Array, dataPtr.Offset, dataPtr.Count);
+        BinaryReader br = new BinaryReader(ms);
+
+        int monsterId = br.ReadInt32();
+        Managers.Data.MonsterDic.TryGetValue(monsterId, out var monster);
+        Managers.Data.MonsterDic.Remove(monsterId);
+        monster.GetComponent<MonsterController>().Dead();
     }
 
     private void PacketHandler_S2C_DELETEMONSTER(ArraySegment<byte> dataPtr, int dataSize)
@@ -215,14 +229,21 @@ public class PacketHandler
 
     private void PacketHandler_S2C_MONSTERDEAD(ArraySegment<byte> dataPtr, int dataSize)
     {
-        MemoryStream ms = new MemoryStream(dataPtr.Array, dataPtr.Offset, dataPtr.Count);
-        BinaryReader br = new BinaryReader(ms);
+        try
+        {
+            MemoryStream ms = new MemoryStream(dataPtr.Array, dataPtr.Offset, dataPtr.Count);
+            BinaryReader br = new BinaryReader(ms);
 
-        int monsterId = br.ReadInt32();
+            int monsterId = br.ReadInt32();
 
-        Managers.Data.MonsterDic.TryGetValue(monsterId, out var monster);
-        Managers.Resource.Destory(monster.gameObject);
-        Managers.Data.MonsterDic.Remove(monsterId);
+            Managers.Data.MonsterDic.TryGetValue(monsterId, out var monster);
+            Managers.Resource.Destory(monster.gameObject);
+            Managers.Data.MonsterDic.Remove(monsterId);
+        }
+        catch (Exception e) 
+        {
+            
+        }
     }
 
     private void PacketHandler_S2C_MONSTERATTACKED(ArraySegment<byte> dataPtr, int dataSize)

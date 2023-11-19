@@ -37,6 +37,7 @@ public class Type
         S2C_MONSTERSYNC,
         S2C_NEWMONSTER,
         S2C_DELETEMONSTER,
+        S2C_MONSTERDEADCLIENT,
     }
     public static string IP { get { return "58.236.130.58"; } }
     public static int PORT { get { return 30002; } }
