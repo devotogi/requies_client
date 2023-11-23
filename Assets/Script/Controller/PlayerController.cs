@@ -40,21 +40,27 @@ public class PlayerController : PlayController
 
     void OnDrawGizmos()
     {
-        float maxDistance = 2;
-        RaycastHit hit;
-        int layerMask = 1 << LayerMask.NameToLayer("Enemy");
-        // Physics.SphereCast (레이저를 발사할 위치, 구의 반경, 발사 방향, 충돌 결과, 최대 거리)
-        bool isHit = Physics.SphereCast(transform.position + Vector3.up, transform.lossyScale.x / 2, transform.forward, out hit, maxDistance, layerMask);
-        Gizmos.color = Color.red;
-        if (isHit)
-        {
-            Gizmos.DrawRay(transform.position + Vector3.up, transform.forward * hit.distance);
-            Gizmos.DrawWireSphere((transform.position + Vector3.up) + (transform.forward * hit.distance), transform.lossyScale.x / 2);
-        }
-        else
-        {
-            Gizmos.DrawRay(transform.position + Vector3.up, transform.forward * maxDistance);
-        }
+        //float maxDistance = 2;
+        //RaycastHit hit;
+        //int layerMask = 1 << LayerMask.NameToLayer("Enemy");
+        //// Physics.SphereCast (레이저를 발사할 위치, 구의 반경, 발사 방향, 충돌 결과, 최대 거리)
+        //bool isHit = Physics.SphereCast(transform.position + Vector3.up, transform.lossyScale.x / 2, transform.forward, out hit, maxDistance, layerMask);
+        //Gizmos.color = Color.red;
+        //if (isHit)
+        //{
+        //    Gizmos.DrawRay(transform.position + Vector3.up, transform.forward * hit.distance);
+        //    Gizmos.DrawWireSphere((transform.position + Vector3.up) + (transform.forward * hit.distance), transform.lossyScale.x / 2);
+        //}
+        //else
+        //{
+        //    Gizmos.DrawRay(transform.position + Vector3.up, transform.forward * maxDistance);
+        //}
+
+        float sphereRadius = 0.5f;
+        Vector3 attackPos = transform.position + transform.TransformDirection(Vector3.forward) + Vector3.up;
+
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(attackPos, sphereRadius);
     }
 
     IEnumerator movePacketCount()
@@ -514,15 +520,18 @@ public class PlayerController : PlayController
         int playerLayerMask = 1 << LayerMask.NameToLayer("Player");
         int monsterLayerMask = 1 << LayerMask.NameToLayer("Enemy");
 
-        if (Physics.SphereCast(transform.position + Vector3.up, transform.lossyScale.x / 2, transform.TransformDirection(Vector3.forward), out hit, 2, (playerLayerMask | monsterLayerMask)))
-        {
-            Gizmos.color = Color.red;
+        float sphereRadius = 0.5f;
+        Vector3 attackPos = transform.position + transform.TransformDirection(Vector3.forward) + Vector3.up;
 
-            int targetLayer = hit.transform.gameObject.layer;
+        Collider[] colliders = Physics.OverlapSphere(attackPos, sphereRadius, (monsterLayerMask | playerLayerMask));
+
+        foreach (Collider collider in colliders)
+        {
+            int targetLayer = collider.transform.gameObject.layer;
 
             if (targetLayer == 17)
             {
-                PlayController pc = hit.transform.gameObject.GetComponent<PlayController>();
+                PlayController pc = collider.transform.gameObject.GetComponent<PlayController>();
                 Int32 otherPlayerId = pc.PlayerID;
 
                 byte[] bytes = new byte[12];
@@ -536,13 +545,13 @@ public class PlayerController : PlayController
                 bw.Write((Int32)_damage);
                 _network.SendPacket(bytes, 12);
             }
-            else if (targetLayer == 15) 
+            else if (targetLayer == 15)
             {
-                float x =  hit.transform.position.x;
-                float y =  hit.transform.position.y;
-                float z =  hit.transform.position.z;
+                float x = collider.transform.position.x;
+                float y = collider.transform.position.y;
+                float z = collider.transform.position.z;
 
-                MonsterController mc = hit.transform.gameObject.GetComponent<MonsterController>();
+                MonsterController mc = collider.transform.gameObject.GetComponent<MonsterController>();
                 Int32 monsterId = mc.MonsterId;
 
                 byte[] bytes = new byte[24];
@@ -560,6 +569,7 @@ public class PlayerController : PlayController
                 _network.SendPacket(bytes, 24);
             }
         }
+
         yield return new WaitForSeconds(0.5f);
         _coAttack = false;
         _dir = Type.Dir.NONE;

@@ -8,7 +8,24 @@ public class MonsterController : CreatureController
     public int MonsterId { get { return _monsterId; } set { _monsterId = value; } }
     public Type.MonsterType MonsterType {get { return _monsterType; } set { _monsterType = value; } }
     public float HP { get { return _hp; } set { _hp = value; } }
-    public HpController HPC { get { return _hpController; } set { _hpController = value; _hpController.SetHPMax(1000); } }
+    public HpController HPC { get { return _hpController; } set { _hpController = value; 
+        
+        switch (_monsterType) 
+            {
+                case Type.MonsterType.Bear:
+                    _hpController.SetHPMax(2000);
+                    break;
+
+                case Type.MonsterType.Skeleton:
+                    _hpController.SetHPMax(1000);
+                    break;
+
+                case Type.MonsterType.Thief:
+                    _hpController.SetHPMax(500);
+                    break;
+            }
+        
+        } }
     private Type.MonsterType _monsterType;
     private int _monsterId;
     private float _hp;
@@ -65,6 +82,20 @@ public class MonsterController : CreatureController
         SetHp(hp);
         _conner = conner;
 
+        switch (_monsterType) 
+        {
+            case Type.MonsterType.Bear:
+                _speed = 1.5f;
+                break;
+
+            case Type.MonsterType.Skeleton:
+                _speed = 2.0f;
+                break;
+
+            case Type.MonsterType.Thief:
+                _speed = 2.5f;
+                break;
+        }
     }
 
     void Update_IDLE() 
@@ -142,12 +173,13 @@ public class MonsterController : CreatureController
     public void Dead() 
     {
         _state = Type.State.DEATH;
+        _hpController.SetHp(0);
         StartCoroutine(CoDead());
     }
 
     IEnumerator CoDead() 
     {
-        yield return new WaitForSeconds(3.5f);
+        yield return new WaitForSeconds(5f);
         Managers.Resource.Destory(gameObject);
     }
 }

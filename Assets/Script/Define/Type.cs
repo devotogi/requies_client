@@ -82,6 +82,8 @@ public class Type
     public enum MonsterType : Int32 
     {
         Bear,
+        Skeleton,
+        Thief
     }
 }
 

@@ -89,9 +89,9 @@ public class PacketHandler
                 PacketHandler_S2C_MONSTERSYNC(dataPtr, dataSize);
                 break;
 
-            case Type.PacketProtocol.S2C_NEWMONSTER:
-                PacketHandler_S2C_NEWMONSTER(dataPtr, dataSize);
-                break;
+            //case Type.PacketProtocol.S2C_NEWMONSTER:
+            //    PacketHandler_S2C_NEWMONSTER(dataPtr, dataSize);
+            //    break;
 
             case Type.PacketProtocol.S2C_DELETEMONSTER:
                 PacketHandler_S2C_DELETEMONSTER(dataPtr, dataSize);
@@ -137,39 +137,56 @@ public class PacketHandler
         Managers.Data.MonsterDic.Remove(monsterId);
     }
 
-    private void PacketHandler_S2C_NEWMONSTER(ArraySegment<byte> dataPtr, int dataSize)
+    //private void PacketHandler_S2C_NEWMONSTER(ArraySegment<byte> dataPtr, int dataSize)
+    //{
+    //    MemoryStream ms = new MemoryStream(dataPtr.Array, dataPtr.Offset, dataPtr.Count);
+    //    BinaryReader br = new BinaryReader(ms);
+
+    //    Type.State monsterState = (Type.State)br.ReadInt16();
+    //    int monsterId = br.ReadInt32();
+    //    int monsterType = br.ReadInt32();
+    //    float x = br.ReadSingle();
+    //    float y = br.ReadSingle();
+    //    float z = br.ReadSingle();
+    //    float hp = br.ReadSingle();
+    //    float lx = br.ReadSingle();
+    //    float ly = br.ReadSingle();
+    //    float lz = br.ReadSingle();
+    //    Vector3 pos = new Vector3(x, y, z);
+    //    Vector3 look = new Vector3(lx, ly, lz);
+
+    //    GameObject mo = MonsterSpawnType((Type.MonsterType)monsterType);
+    //    MonsterController mc = mo.AddComponent<MonsterController>();
+    //    GameObject hpObject = Managers.Resource.Instantiate("UI/HP");
+    //    HpController hpc = hpObject.GetComponent<HpController>();
+    //    mc.HPC = hpc;
+
+    //    mc.SetHp(hp);
+    //    mc.MonsterId = monsterId;
+    //    mc.MonsterType = (Type.MonsterType)monsterType;
+    //    mo.transform.position = pos;
+
+    //    Managers.Data.MonsterDic.Add(monsterId, mo);
+    //    mc.GetComponent<MonsterController>().Sync(monsterState, pos, hp, look, Vector3.zero, null);
+    //}
+
+    private GameObject MonsterSpawnType(Type.MonsterType type)
     {
-        MemoryStream ms = new MemoryStream(dataPtr.Array, dataPtr.Offset, dataPtr.Count);
-        BinaryReader br = new BinaryReader(ms);
+        switch (type) 
+        {
+            case Type.MonsterType.Bear:
+                return Managers.Resource.Instantiate("Monster/Bear"); 
 
-        Type.State monsterState = (Type.State)br.ReadInt16();
-        int monsterId = br.ReadInt32();
-        int monsterType = br.ReadInt32();
-        float x = br.ReadSingle();
-        float y = br.ReadSingle();
-        float z = br.ReadSingle();
-        float hp = br.ReadSingle();
-        float lx = br.ReadSingle();
-        float ly = br.ReadSingle();
-        float lz = br.ReadSingle();
-        Vector3 pos = new Vector3(x, y, z);
-        Vector3 look = new Vector3(lx, ly, lz);
+            case Type.MonsterType.Skeleton:
+                return Managers.Resource.Instantiate("Monster/Skleeton");
 
-        GameObject bear = Managers.Resource.Instantiate("Monster/Bear");
-        MonsterController mc = bear.AddComponent<MonsterController>();
-        GameObject hpObject = Managers.Resource.Instantiate("UI/HP");
-        HpController hpc = hpObject.GetComponent<HpController>();
-        mc.HPC = hpc;
+            case Type.MonsterType.Thief:
+                return Managers.Resource.Instantiate("Monster/Thief");
 
-        mc.SetHp(hp);
-        mc.MonsterId = monsterId;
-        mc.MonsterType = (Type.MonsterType)monsterType;
-        bear.transform.position = pos;
-
-        Managers.Data.MonsterDic.Add(monsterId, bear);
-        mc.GetComponent<MonsterController>().Sync(monsterState, pos, hp, look, Vector3.zero, null);
+            default:
+                return null;
+        }
     }
-
     private void PacketHandler_S2C_MONSTERSYNC(ArraySegment<byte> dataPtr, int dataSize)
     {
         MemoryStream ms = new MemoryStream(dataPtr.Array, dataPtr.Offset, dataPtr.Count);
@@ -285,7 +302,7 @@ public class PacketHandler
             float y = br.ReadSingle();
             float z = br.ReadSingle();
             float hp = br.ReadSingle();
-            float lx = br.ReadSingle();
+            float lx = br.ReadSingle(); 
             float ly = br.ReadSingle();
             float lz = br.ReadSingle();
             float dx = br.ReadSingle();
@@ -306,17 +323,17 @@ public class PacketHandler
             Vector3 look = new Vector3(lx, ly, lz);
             Vector3 dest = new Vector3(dx, dy, dz);
 
-            GameObject bear = Managers.Resource.Instantiate("Monster/Bear");
-            MonsterController mc = bear.AddComponent<MonsterController>();
+            GameObject mo = MonsterSpawnType((Type.MonsterType)monsterType);
+            MonsterController mc = mo.AddComponent<MonsterController>();
             GameObject hpObject = Managers.Resource.Instantiate("UI/HP");
             HpController hpc = hpObject.GetComponent<HpController>();
 
-            mc.HPC = hpc;
             mc.MonsterId = monsterId;
             mc.MonsterType = (Type.MonsterType)monsterType;
-            bear.transform.position = pos;
+            mo.transform.position = pos;
+            mc.HPC = hpc;
 
-            Managers.Data.MonsterDic.Add(monsterId, bear);
+            Managers.Data.MonsterDic.Add(monsterId, mo);
             mc.GetComponent<MonsterController>().Sync(monsterState, pos, hp, look, dest, conner);
         }
     }
@@ -370,18 +387,19 @@ public class PacketHandler
         Vector3 look = new Vector3(lx, ly, lz);
         Vector3 dest = new Vector3(dx, dy, dz);
 
-        GameObject bear = Managers.Resource.Instantiate("Monster/Bear");
-        MonsterController mc = bear.AddComponent<MonsterController>();
+        GameObject mo = MonsterSpawnType((Type.MonsterType)monsterType);
+        MonsterController mc = mo.AddComponent<MonsterController>();
         GameObject hpObject = Managers.Resource.Instantiate("UI/HP");
         HpController hpc = hpObject.GetComponent<HpController>();
 
-        mc.HPC = hpc;
+      
         mc.MonsterId = monsterId;
         mc.MonsterType = (Type.MonsterType) monsterType;
-        bear.transform.position = pos;
+        mo.transform.position = pos;
 
-        Managers.Data.MonsterDic.Add(monsterId, bear);
+        Managers.Data.MonsterDic.Add(monsterId, mo);
         mc.GetComponent<MonsterController>().Sync(monsterState, pos, hp, look, dest, conner);
+        mc.HPC = hpc;
     }
 
     private void PacketHandler_S2C_PLAYERESPAWN(ArraySegment<byte> dataPtr, int dataSize)
@@ -460,12 +478,17 @@ public class PacketHandler
         Int32 attackedPlayerId = br.ReadInt32();
         float attackedHp = br.ReadSingle();
         float attackedMp = br.ReadSingle();
+        int damage = br.ReadInt32();
 
         if (Managers.Data.PlayerController.PlayerID == attackedPlayerId)
         {
             Managers.Data.PlayerController.Attacked();
+
             Managers.Data.PlayerController.SetHp(attackedHp);
             Managers.Data.PlayerController.SetMp(attackedMp);
+
+            Damage damageText = Managers.Resource.Instantiate("UI/DamageText").GetComponent<Damage>();
+            damageText.Init(new Vector3(Managers.Data.PlayerController.transform.position.x, Managers.Data.PlayerController.transform.position.y + 1.7f, Managers.Data.PlayerController.transform.position.z), damage);
         }
         else
         {
