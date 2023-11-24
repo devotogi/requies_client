@@ -212,10 +212,13 @@ public class OtherPlayerController : PlayController
 
     IEnumerator CoAttacked()
     {
+        _attackedCoolTime = true;
         _coAttacked = true;
         yield return new WaitForSeconds(1.2f);
         _dir = Type.Dir.NONE;
         _coAttacked = false;
+        yield return new WaitForSeconds(3f);
+        _attackedCoolTime = false;
     }
 
     IEnumerator CoDeath()
@@ -226,7 +229,10 @@ public class OtherPlayerController : PlayController
 
     public override void Attacked()
     {
+        if (_attackedCoolTime) return;
+
         if (_coAttacked) return;
+
         _animator.Play("knight_attacked");
         StartCoroutine(CoAttacked());
     }

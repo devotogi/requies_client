@@ -21,6 +21,7 @@ public class PlayController : CreatureController
     private Vector3 _mousePrevPos = Vector3.zero;
     protected bool _death = false;
     protected GameObject _talk;
+    protected bool _attackedCoolTime = false;
 
     private void OnDestroy()
     {
