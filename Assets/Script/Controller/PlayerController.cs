@@ -21,6 +21,8 @@ public class PlayerController : PlayController
     private Quaternion _prevCameraLocalRotation;
     private Network _network;
     HpMpController _hpMpController;
+    MonsterInfoController _monsterInfoController = null;
+    ExpController _expController = null;
 
     private void LateUpdate()
     {
@@ -32,7 +34,6 @@ public class PlayerController : PlayController
             if (camera != null)
             { 
                 _talk.transform.LookAt(camera.transform);
-      
             }
 
         } 
@@ -81,6 +82,10 @@ public class PlayerController : PlayController
         _agent.updateRotation = false;
         _agent.enabled = true;
         _hpMpController = GameObject.FindGameObjectWithTag("HpMp").GetComponent<HpMpController>();
+        _expController = GameObject.Find("PlayerUI(Clone)").transform.GetChild(1).GetComponent<ExpController>();
+        _expController.Init();
+        _monsterInfoController = GameObject.Find("PlayerUI(Clone)").transform.GetChild(4).GetComponent<MonsterInfoController>();
+        _monsterInfoController.Init();
     }
 
     public void Init(Quaternion cameraLocalRotation, GameObject camera)
@@ -213,6 +218,22 @@ public class PlayerController : PlayController
         }
     }
 
+    internal void SetExp(int level, float exp, float expMax)
+    {
+       _expController.SetExp(level, exp, expMax);
+    }
+
+    internal void MonsterInfoIsUnActive(int monsterId)
+    {
+        _monsterInfoController.MonsterInfoIsUnActive(monsterId);
+    }
+
+    internal void SetMonsterInfo(int monsterId, int monsterType, float monsterHp)
+    {
+        _monsterInfoController.gameObject.SetActive(true);
+        _monsterInfoController.SetMonsterInfo(monsterId, monsterType, monsterHp);        
+    }
+
     public override void KeyBoardMove_Update_IDLE()
     {
         if (_death) return;
@@ -314,6 +335,11 @@ public class PlayerController : PlayController
                 _dirVector3 = cameraLFVector;
                 break;
         }
+    }
+
+    internal void MonsterInfoIsAttacked(int monsterId, float hp)
+    {
+        _monsterInfoController.MonsterInfoIsAttacked(monsterId, hp);
     }
 
     public override void KeyBoardMove_Update_ATTACK()

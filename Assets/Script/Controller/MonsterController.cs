@@ -8,39 +8,16 @@ public class MonsterController : CreatureController
     public int MonsterId { get { return _monsterId; } set { _monsterId = value; } }
     public Type.MonsterType MonsterType {get { return _monsterType; } set { _monsterType = value; } }
     public float HP { get { return _hp; } set { _hp = value; } }
-    public HpController HPC { get { return _hpController; } set { _hpController = value; 
-        
-        switch (_monsterType) 
-            {
-                case Type.MonsterType.Bear:
-                    _hpController.SetHPMax(2000);
-                    break;
-
-                case Type.MonsterType.Skeleton:
-                    _hpController.SetHPMax(1000);
-                    break;
-
-                case Type.MonsterType.Thief:
-                    _hpController.SetHPMax(500);
-                    break;
-            }
-        
-        } }
     private Type.MonsterType _monsterType;
     private int _monsterId;
     private float _hp;
-    private HpController _hpController = null;
     private Vector3 _dir = Vector3.zero;
     private float _speed = 1.5f;
     private Vector3 _dest;
     private List<Vector2Int> _conner = new List<Vector2Int>();
     private void LateUpdate()
     {
-        if (_hpController != null)
-        {
-            _hpController.transform.position = transform.position + Vector3.up * 2.5f;
-            _hpController.LookMainCamera();
-        }
+
     }
 
     void Update()
@@ -161,19 +138,15 @@ public class MonsterController : CreatureController
     public override void Destory()
     {
         base.Destory();
-        if (_hpController)
-            Managers.Resource.Destory(_hpController.gameObject);
     }
     public void SetHp(float hp)
     {
-        if (_hpController)
-            _hpController.SetHp(hp);
+
     }
 
     public void Dead() 
     {
         _state = Type.State.DEATH;
-        _hpController.SetHp(0);
         StartCoroutine(CoDead());
     }
 

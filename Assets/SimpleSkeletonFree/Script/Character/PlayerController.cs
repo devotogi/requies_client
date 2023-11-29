@@ -11,7 +11,6 @@ namespace SkeletonEditor
         private Animator animator;
         private Quaternion initRotation;
 
-
         private int currentAnimation;
         private List<string> animations;
        

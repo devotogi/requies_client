@@ -38,6 +38,8 @@ public class Type
         S2C_NEWMONSTER,
         S2C_DELETEMONSTER,
         S2C_MONSTERDEADCLIENT,
+        S2C_MONSTERINFO,
+        S2C_PLAYEREXP,
     }
     public static string IP { get { return "58.236.130.58"; } }
     public static int PORT { get { return 30002; } }

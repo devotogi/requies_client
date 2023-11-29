@@ -100,7 +100,40 @@ public class PacketHandler
             case Type.PacketProtocol.S2C_MONSTERDEADCLIENT:
                 PacketHandler_S2C_MONSTERDEADCLIENT(dataPtr, dataSize);
                 break;
+
+            case Type.PacketProtocol.S2C_MONSTERINFO:
+                PacketHandler_S2C_MONSTERINFO(dataPtr, dataSize);
+                break;
+
+            case Type.PacketProtocol.S2C_PLAYEREXP:
+                PacketHandler_S2C_PLAYEREXP(dataPtr, dataSize);
+                break;
         }
+    }
+
+    private void PacketHandler_S2C_PLAYEREXP(ArraySegment<byte> dataPtr, int dataSize)
+    {
+        MemoryStream ms = new MemoryStream(dataPtr.Array, dataPtr.Offset, dataPtr.Count);
+        BinaryReader br = new BinaryReader(ms);
+        int level = br.ReadInt32();
+        float exp = br.ReadSingle();
+        float expMax = br.ReadSingle();
+        Managers.Data.PlayerController.SetExp(level, exp, expMax);
+    }
+
+    private void PacketHandler_S2C_MONSTERINFO(ArraySegment<byte> dataPtr, int dataSize)
+    {
+        MemoryStream ms = new MemoryStream(dataPtr.Array, dataPtr.Offset, dataPtr.Count);
+        BinaryReader br = new BinaryReader(ms);
+
+        int monsterId =   br.ReadInt32();
+        int monsterType = br.ReadInt32();
+        float monsterHp = br.ReadSingle();
+        Managers.Data.PlayerController.SetMonsterInfo(monsterId, monsterType, monsterHp);
+        
+        //Managers.Data.MonsterDic.TryGetValue(monsterId, out var monster);
+        //Managers.Data.MonsterDic.Remove(monsterId);
+        //monster.GetComponent<MonsterController>().Dead();
     }
 
     private void PacketHandler_S2C_MONSTERDEADCLIENT(ArraySegment<byte> dataPtr, int dataSize)
@@ -112,6 +145,7 @@ public class PacketHandler
         Managers.Data.MonsterDic.TryGetValue(monsterId, out var monster);
         Managers.Data.MonsterDic.Remove(monsterId);
         monster.GetComponent<MonsterController>().Dead();
+        Managers.Data.PlayerController.MonsterInfoIsUnActive(monsterId);
     }
 
     private void PacketHandler_S2C_DELETEMONSTER(ArraySegment<byte> dataPtr, int dataSize)
@@ -236,6 +270,11 @@ public class PacketHandler
 
             Managers.Data.MonsterDic.TryGetValue(monsterId, out var monster);
             monster.GetComponent<MonsterController>().Sync(monsterState, pos, hp, look, dest, conner);
+
+            if (monsterState == Type.State.ATTACKED) 
+            {
+                Managers.Data.PlayerController.MonsterInfoIsAttacked(monsterId, hp);
+            }
    
         }
         catch (Exception e)
@@ -325,13 +364,13 @@ public class PacketHandler
 
             GameObject mo = MonsterSpawnType((Type.MonsterType)monsterType);
             MonsterController mc = mo.AddComponent<MonsterController>();
-            GameObject hpObject = Managers.Resource.Instantiate("UI/HP");
-            HpController hpc = hpObject.GetComponent<HpController>();
+            //GameObject hpObject = Managers.Resource.Instantiate("UI/HP");
+            //HpController hpc = hpObject.GetComponent<HpController>();
 
             mc.MonsterId = monsterId;
             mc.MonsterType = (Type.MonsterType)monsterType;
             mo.transform.position = pos;
-            mc.HPC = hpc;
+            //mc.HPC = hpc;
 
             Managers.Data.MonsterDic.Add(monsterId, mo);
             mc.GetComponent<MonsterController>().Sync(monsterState, pos, hp, look, dest, conner);
@@ -389,8 +428,8 @@ public class PacketHandler
 
         GameObject mo = MonsterSpawnType((Type.MonsterType)monsterType);
         MonsterController mc = mo.AddComponent<MonsterController>();
-        GameObject hpObject = Managers.Resource.Instantiate("UI/HP");
-        HpController hpc = hpObject.GetComponent<HpController>();
+        //GameObject hpObject = Managers.Resource.Instantiate("UI/HP");
+        //HpController hpc = hpObject.GetComponent<HpController>();
 
       
         mc.MonsterId = monsterId;
@@ -399,7 +438,7 @@ public class PacketHandler
 
         Managers.Data.MonsterDic.Add(monsterId, mo);
         mc.GetComponent<MonsterController>().Sync(monsterState, pos, hp, look, dest, conner);
-        mc.HPC = hpc;
+        //mc.HPC = hpc;
     }
 
     private void PacketHandler_S2C_PLAYERESPAWN(ArraySegment<byte> dataPtr, int dataSize)
