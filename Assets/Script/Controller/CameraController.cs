@@ -92,31 +92,31 @@ public class CameraController : MonoBehaviour
         //    transform.position = _player.transform.position + _delta;
         //}
 
-        //float scroll = Input.GetAxis("Mouse ScrollWheel") * _speed;
-        //scroll = scroll * -1;
+        float scroll = Input.GetAxis("Mouse ScrollWheel") * _speed;
+        scroll = scroll * -1;
 
         ////최대 줌인
-        //if (gameObject.GetComponent<Camera>().fieldOfView <= 20.0f && scroll < 0)
-        //{
-        //    gameObject.GetComponent<Camera>().fieldOfView = 20.0f;
-        //}
-        //// 최대 줌 아웃
-        //else if (gameObject.GetComponent<Camera>().fieldOfView >= 60.0f && scroll > 0)
-        //{
-        //    gameObject.GetComponent<Camera>().fieldOfView = 60.0f;
-        //}
-        //// 줌인 아웃 하기.
-        //else
-        //{
-        //    gameObject.GetComponent<Camera>().fieldOfView += scroll;
-        //}
+        if (gameObject.GetComponent<Camera>().fieldOfView <= 20.0f && scroll < 0)
+        {
+            gameObject.GetComponent<Camera>().fieldOfView = 20.0f;
+        }
+        // 최대 줌 아웃
+        else if (gameObject.GetComponent<Camera>().fieldOfView >= 60.0f && scroll > 0)
+        {
+            gameObject.GetComponent<Camera>().fieldOfView = 60.0f;
+        }
+        // 줌인 아웃 하기.
+        else
+        {
+            gameObject.GetComponent<Camera>().fieldOfView += scroll;
+        }
 
-        //// 일정 구간 줌으로 들어가면 캐릭터를 바라보도록 한다.
-        //if (_player && gameObject.GetComponent<Camera>().fieldOfView <= 30.0f)
-        //{
-        //    transform.rotation = Quaternion.Slerp(transform.rotation
-        //        , Quaternion.LookRotation(_player.gameObject.transform.position - transform.position)
-        //        , 0.15f);
-        //}
+        // 일정 구간 줌으로 들어가면 캐릭터를 바라보도록 한다.
+        if (_player && gameObject.GetComponent<Camera>().fieldOfView <= 30.0f)
+        {
+            transform.rotation = Quaternion.Slerp(transform.rotation
+                , Quaternion.LookRotation(_player.gameObject.transform.position - transform.position)
+                , 0.15f);
+        }
     }
 }
