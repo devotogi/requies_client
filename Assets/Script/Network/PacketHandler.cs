@@ -108,17 +108,48 @@ public class PacketHandler
             case Type.PacketProtocol.S2C_PLAYEREXP:
                 PacketHandler_S2C_PLAYEREXP(dataPtr, dataSize);
                 break;
+
+            case Type.PacketProtocol.S2C_PLAYERSTATINFO:
+                PacketHandler_S2C_PLAYERSTATINFO(dataPtr, dataSize);
+                break;
         }
+    }
+
+    private void PacketHandler_S2C_PLAYERSTATINFO(ArraySegment<byte> dataPtr, int dataSize)
+    {
+        MemoryStream ms = new MemoryStream(dataPtr.Array, dataPtr.Offset, dataPtr.Count);
+        BinaryReader br = new BinaryReader(ms);
+        float damage = br.ReadSingle();
+        float speed = br.ReadSingle();
+        float defense = br.ReadSingle();
+        int statPoint = br.ReadInt32();
+        Managers.Data.PlayerController.StatInfoOpen(damage,speed,defense, statPoint);
     }
 
     private void PacketHandler_S2C_PLAYEREXP(ArraySegment<byte> dataPtr, int dataSize)
     {
         MemoryStream ms = new MemoryStream(dataPtr.Array, dataPtr.Offset, dataPtr.Count);
         BinaryReader br = new BinaryReader(ms);
+        int playerId = br.ReadInt32();
         int level = br.ReadInt32();
         float exp = br.ReadSingle();
         float expMax = br.ReadSingle();
-        Managers.Data.PlayerController.SetExp(level, exp, expMax);
+        float hpMax = br.ReadSingle();
+        float hp = br.ReadSingle();
+
+        if (playerId == Managers.Data.PlayerController.PlayerID)
+        {
+            Managers.Data.PlayerController.SetExp(level, exp, expMax);
+            Managers.Data.PlayerController.SetHp(hp);
+            Managers.Data.PlayerController.SetHpMax(hpMax);
+        }
+        else
+        {
+            Managers.Data.PlayerDic.TryGetValue(playerId, out var otherPlayer);
+            otherPlayer.SetExp(level, exp, expMax);
+            otherPlayer.SetHp(hp);
+            otherPlayer.SetHpMax(hpMax);
+        }
     }
 
     private void PacketHandler_S2C_MONSTERINFO(ArraySegment<byte> dataPtr, int dataSize)
@@ -604,8 +635,11 @@ public class PacketHandler
             float lz = br.ReadSingle();
             float lw = br.ReadSingle();
             Quaternion localRotation = new Quaternion(lx, ly, lz, lw);
+            float hpMax = br.ReadSingle();
+            float mpMax = br.ReadSingle();
             float hp = br.ReadSingle();
             float mp = br.ReadSingle();
+            int level = br.ReadInt32();
 
             GameObject playerGo = Managers.Resource.Instantiate("Player/Knight");
             playerGo.name = $"otherPlayer{playerId}";
@@ -622,8 +656,11 @@ public class PacketHandler
 
             opc.Init(quaternion, cameraPosGo.transform.GetChild(0).gameObject, hpc);
             opc.UpdateSync(moveType, state, dir, mouseDir, nowPos, quaternion, target, localRotation);
+            opc.SetHpMax(hpMax);
+            opc.SetHpMax(mpMax);
             opc.SetHp(hp);
             opc.SetMp(mp);
+            opc.SetLevel(level);
         }
         catch (Exception e)
         {
@@ -679,8 +716,11 @@ public class PacketHandler
             float lz = br.ReadSingle();
             float lw = br.ReadSingle();
             Quaternion localRotation = new Quaternion(lx, ly, lz, lw);
+            float hpMax = br.ReadSingle();
+            float mpMax = br.ReadSingle();
             float hp = br.ReadSingle();
             float mp = br.ReadSingle();
+            int playerLevel = br.ReadInt32();
 
             if (playerId == Managers.Data.PlayerController.PlayerID)
                 continue;
@@ -694,6 +734,7 @@ public class PacketHandler
             try
             {
                 Managers.Data.PlayerDic.Add(opc.PlayerID, opc);
+                opc.SetLevel(playerLevel);
             }
             catch (Exception e) {
                 Debug.LogException(e);
@@ -708,6 +749,8 @@ public class PacketHandler
 
             opc.Init(cameraLocalRotation, cameraPosGo.transform.GetChild(0).gameObject, hpc);
             opc.UpdateSync(moveType, state, dir, mouseDir,startPos, cameraLocalRotation, target, localRotation);
+            opc.SetHpMax(hpMax);
+            opc.SetHpMax(mpMax);
             opc.SetHp(hp);
             opc.SetMp(mp);
         }
@@ -782,14 +825,24 @@ public class PacketHandler
         Quaternion quaternion = new Quaternion(qx, qy, qz, qw);
         float hp = br.ReadSingle();
         float mp = br.ReadSingle();
+        int level = br.ReadInt32();
+        float hpMax = br.ReadSingle();
+        float mpMax = br.ReadSingle();
+        float speed = br.ReadSingle();
+        float damage = br.ReadSingle();
 
         GameObject playerGo = Managers.Resource.Instantiate("Player/Knight");
         playerGo.name = "player";
         PlayerController pc = playerGo.AddComponent<PlayerController>();
         pc.SetAgentPos(new Vector3(x, y, z));
         pc.PlayerID = playerId;
+        pc.SetHpMax(hpMax);
+        pc.SetMpMax(mpMax);
         pc.SetMp(mp);
         pc.SetHp(hp);
+        pc.SetLevel(level);
+        pc.SetSpeed(speed);
+        pc.SetDamage(damage);
         Managers.Data.PlayerController = pc;
         Managers.Data.PlayerDic.Add(pc.PlayerID, pc);
 

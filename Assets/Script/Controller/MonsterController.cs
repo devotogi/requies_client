@@ -91,7 +91,7 @@ public class MonsterController : CreatureController
         _dir = destV.normalized;
         float distF = destV.magnitude;
 
-        if (distF <= 0.05)
+        if (distF <= 0.02)
         {
             transform.position = dest;
             _conner.RemoveAt(0);

@@ -6,8 +6,8 @@ using UnityEngine.AI;
 
 public class PlayController : CreatureController
 {
+    protected int _level = 1;
     public int PlayerID { get; set; }
- 
     protected float _speed = 3.0f;
     protected GameObject _camera = null;
     protected Type.MoveType _moveType = Type.MoveType.KeyBoard;
@@ -137,8 +137,6 @@ public class PlayController : CreatureController
     public virtual void SendSyncPlayer() { }
     public virtual void SendSyncMap() { }
 
-    public virtual void SetHp(float hp) { }
-    public virtual void SetMp(float hp) { }
     public virtual void Death() { }
     public virtual void Talk(string msg) 
     {
@@ -159,5 +157,27 @@ public class PlayController : CreatureController
         yield return new WaitForSeconds(1.5f); 
         if (_talk != null) Managers.Resource.Destory(_talk);
         _talk = null;
+    }
+
+    internal void SetLevel(int level)
+    {
+        _level = level;
+    }
+
+    public virtual void SetExp(int level, float exp, float expMax)
+    {
+ 
+    }
+
+    public virtual void SetHp(float hp) { }
+    public virtual void SetMp(float mp) { }
+
+    public virtual void SetHpMax(float hpMax)
+    {
+
+    }
+    public virtual void SetMpMax(float mpMax)
+    {
+
     }
 }

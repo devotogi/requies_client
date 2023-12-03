@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using TMPro;
 using UnityEngine;
 using UnityEngine.AI;
 using UnityEngine.UI;
@@ -17,13 +18,14 @@ public class PlayerController : PlayController
 
     private int _movePacketCnt = 0;
     private Text _text;
-
     private Quaternion _prevCameraLocalRotation;
     private Network _network;
     HpMpController _hpMpController;
     MonsterInfoController _monsterInfoController = null;
     ExpController _expController = null;
-
+    TMP_Text _levelUi = null;
+    StatInfoController _statInfoController = null;  
+    
     private void LateUpdate()
     {
         if (_talk != null)
@@ -81,11 +83,16 @@ public class PlayerController : PlayController
         _agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
         _agent.updateRotation = false;
         _agent.enabled = true;
+        GameObject playerUi = GameObject.Find("PlayerUI(Clone)");
+
         _hpMpController = GameObject.FindGameObjectWithTag("HpMp").GetComponent<HpMpController>();
-        _expController = GameObject.Find("PlayerUI(Clone)").transform.GetChild(1).GetComponent<ExpController>();
+        _expController = playerUi.transform.GetChild(1).GetComponent<ExpController>();
         _expController.Init();
-        _monsterInfoController = GameObject.Find("PlayerUI(Clone)").transform.GetChild(4).GetComponent<MonsterInfoController>();
+        _monsterInfoController = playerUi.transform.GetChild(4).GetComponent<MonsterInfoController>();
         _monsterInfoController.Init();
+        _levelUi = playerUi.transform.GetChild(5).GetChild(0).GetComponent<TMP_Text>();
+        _statInfoController = playerUi.transform.GetChild(6).GetComponent<StatInfoController>();
+        _statInfoController.Init();
     }
 
     public void Init(Quaternion cameraLocalRotation, GameObject camera)
@@ -131,6 +138,17 @@ public class PlayerController : PlayController
             _state = Type.State.IDLE;
             _mouseDir = Type.Dir.NONE;
             return;
+        }
+
+        if (Input.GetKeyDown(KeyCode.I)) 
+        {
+            if (_statInfoController.gameObject.active == false)
+            {
+                RequestStatInfo();
+                // _statInfoController.On();
+            }
+            else
+                _statInfoController.Off();
         }
 
         if (Input.GetMouseButtonUp(1))
@@ -218,8 +236,34 @@ public class PlayerController : PlayController
         }
     }
 
-    internal void SetExp(int level, float exp, float expMax)
+    internal void StatInfoOpen(float damage, float speed, float defense, int statPoint)
     {
+        _statInfoController.On(damage, speed, defense, statPoint);
+    }
+
+    private void RequestStatInfo()
+    {
+        byte[] bytes = new byte[100];
+        MemoryStream ms = new MemoryStream(bytes);
+        ms.Position = 0;
+
+        BinaryWriter bw = new BinaryWriter(ms);
+        bw.Write((Int16)Type.PacketProtocol.C2S_PLAYERSTATINFO);
+        bw.Write((Int16)4);
+        _network.SendPacket(bytes, 4);
+    }
+
+    public override void SetExp(int level, float exp, float expMax)
+    {
+        if (_level != level) 
+        {
+            // 레벨업 이펙트
+            _level = level;
+            GameObject bufferEffect = Managers.Resource.Instantiate("Effect/Buff");
+            BufferEffectController bf = bufferEffect.AddComponent<BufferEffectController>();
+            bf.Player = gameObject;
+        }
+        _levelUi.text = $"Lv.{_level}";
        _expController.SetExp(level, exp, expMax);
     }
 
@@ -638,6 +682,16 @@ public class PlayerController : PlayController
         StartCoroutine(CoAttacked());
     }
 
+    public override void SetHpMax(float hpMax)
+    {
+        GameObject.FindGameObjectWithTag("HpMp").GetComponent<HpMpController>().SetHPMax(hpMax);
+    }
+
+    public override void SetMpMax(float mpMax)
+    {
+        GameObject.FindGameObjectWithTag("HpMp").GetComponent<HpMpController>().SetMPMax(mpMax);
+    }
+
     public override void SetHp(float hp)
     {
         GameObject.FindGameObjectWithTag("HpMp").GetComponent<HpMpController>().SetHp(hp);
@@ -652,5 +706,15 @@ public class PlayerController : PlayController
     {
         _death = true;
         StartCoroutine(CoDeath());
+    }
+
+    internal void SetSpeed(float speed)
+    {
+        _speed = speed;
+    }
+
+    internal void SetDamage(float damage)
+    {
+        _damage = damage;
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -57,5 +58,16 @@ public class HpMpController : MonoBehaviour
         _mpImg.fillAmount = _mp / _mpMax;
         _hpText.text = $"{_hp} / {_hpMax}";
         _mpText.text = $"{_mp} / {_mpMax}";
+    }
+
+    internal void SetHPMax(float hpMax)
+    {
+        _hpMax = hpMax;
+        HpMpUpdate();
+    }
+
+    internal void SetMPMax(float mpMax)
+    {
+        _mpMax = mpMax;
     }
 }

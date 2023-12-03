@@ -250,9 +250,40 @@ public class OtherPlayerController : PlayController
             _hpController.SetHp(hp);
     }
 
+    public override void SetHpMax(float hpMax)
+    {
+        if (_hpController)
+            _hpController.SetHPMax(hpMax);
+    }
+
+    public override void SetMp(float mp)
+    {
+
+    }
+
+    public override void SetMpMax(float mpMax)
+    {
+ 
+    }
+
+
+
+
     public override void Death()
     {
         _death = true;
         StartCoroutine(CoDeath());
+    }
+
+    public override void SetExp(int level, float exp, float expMax)
+    {
+        if (_level != level)
+        {
+            // 레벨업 이펙트
+            _level = level;
+            GameObject bufferEffect = Managers.Resource.Instantiate("Effect/Buff");
+            BufferEffectController bf = bufferEffect.AddComponent<BufferEffectController>();
+            bf.Player = gameObject;
+        }
     }
 }

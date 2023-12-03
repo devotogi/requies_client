@@ -40,6 +40,9 @@ public class Type
         S2C_MONSTERDEADCLIENT,
         S2C_MONSTERINFO,
         S2C_PLAYEREXP,
+        C2S_PLAYERSTATINFO,
+        S2C_PLAYERSTATINFO,
+        C2S_UPSTAT,
     }
     public static string IP { get { return "58.236.130.58"; } }
     public static int PORT { get { return 30002; } }
