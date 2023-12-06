@@ -519,8 +519,8 @@ public class PacketHandler
         MemoryStream ms = new MemoryStream(dataPtr.Array, dataPtr.Offset, dataPtr.Count);
         BinaryReader br = new BinaryReader(ms);
 
+        int chatType = br.ReadInt32();
         int playerId = br.ReadInt32();
-
         int msgSize = br.ReadInt32();
         byte[] msgBytes = br.ReadBytes(msgSize);
         string msg = Encoding.Unicode.GetString(msgBytes);
@@ -532,12 +532,13 @@ public class PacketHandler
         else
         {
             Managers.Data.PlayerDic.TryGetValue(playerId, out var opc);
-            opc.Talk(msg);
+            if (opc != null)
+                opc.Talk(msg);
         }
 
 
-        GameObject chatInput = GameObject.FindGameObjectWithTag("ChatInput");
-        chatInput.GetComponent<ChatInputController>().Push(msg);
+        GameObject chatInput = GameObject.FindGameObjectWithTag("ChatContent");
+        chatInput.GetComponent<ChatViewController>().Push(msg, chatType);
     }
 
     private void PacketHandler_S2C_PLAYERATTACKED(ArraySegment<byte> dataPtr, int dataSize)

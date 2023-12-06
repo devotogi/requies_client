@@ -24,8 +24,9 @@ public class PlayerController : PlayController
     MonsterInfoController _monsterInfoController = null;
     ExpController _expController = null;
     TMP_Text _levelUi = null;
-    StatInfoController _statInfoController = null;  
-    
+    StatInfoController _statInfoController = null;
+    TMP_InputField _chatInput;
+
     private void LateUpdate()
     {
         if (_talk != null)
@@ -93,6 +94,7 @@ public class PlayerController : PlayController
         _levelUi = playerUi.transform.GetChild(5).GetChild(0).GetComponent<TMP_Text>();
         _statInfoController = playerUi.transform.GetChild(6).GetComponent<StatInfoController>();
         _statInfoController.Init();
+        _chatInput = GameObject.FindWithTag("ChatInput").GetComponent<TMP_InputField>();
     }
 
     public void Init(Quaternion cameraLocalRotation, GameObject camera)
@@ -121,6 +123,14 @@ public class PlayerController : PlayController
 
     public override void KeyBoardMove_Update_Input()
     {
+        if (_chatInput.isFocused) 
+        {
+            _dir = Type.Dir.NONE;
+            _state = Type.State.IDLE;
+            _mouseDir = Type.Dir.NONE;
+            return;
+        }
+
         if (_death) return;
 
         if (_coAttacked == true)

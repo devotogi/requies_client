@@ -6,57 +6,58 @@ using System.Text;
 using TMPro;
 using UnityEngine;
 
+
 public class ChatInputController : MonoBehaviour
 {
+    struct Chat 
+    {
+        public int chatType;
+        public string msg;
+    }
+
     TMP_InputField _text;
     Network _network;
     GameObject _chatContent;
-    List<string> chat = new List<string>();
+    List<Chat> chat = new List<Chat>();
+    TMP_InputField _input;
     int _maxSize = 50;
+    TMP_Dropdown dropdown;
     void Start()
     {
         _text = GetComponent<TMP_InputField>();
         _network = GameObject.Find("Network").GetComponent<Network>();
-        _chatContent = GameObject.FindGameObjectWithTag("ChatContent"); 
+        _chatContent = GameObject.FindGameObjectWithTag("ChatContent");
+        _input = GetComponent<TMP_InputField>();
+        dropdown = transform.parent.transform.GetChild(3).GetComponent<TMP_Dropdown>();
     }
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Return)) 
+        if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
         {
+            _input.ActivateInputField();
+            int selectedIndex = dropdown.value;
+            string chatting = _text.text;
+
+            if (chatting.Trim().Length == 0)
+                return;
+
             byte[] bytes = new byte[1000];
             MemoryStream ms = new MemoryStream(bytes);
             ms.Position = 0;
 
-            string chatting = _text.text;
             byte[] chattingBytes = Encoding.Unicode.GetBytes(chatting.Trim());
             int msgSize = chattingBytes.Length;
-            int pktSize = msgSize + 8;
+            int pktSize = msgSize + 8 + 4;
 
             BinaryWriter bw = new BinaryWriter(ms);
             bw.Write((Int16)Type.PacketProtocol.C2S_PLAYERCHAT);
             bw.Write((Int16)pktSize);
+            bw.Write((Int32)selectedIndex);
             bw.Write((Int32)msgSize);
             bw.Write(chattingBytes);
             _network.SendPacket(bytes, pktSize);
             _text.text = "";
         }
-
-        for (int i = 0; i < _chatContent.transform.childCount; i++)
-            Destroy(_chatContent.transform.GetChild(i).gameObject);
-
-        foreach (string msg in chat)
-        {
-            GameObject textGo = Managers.Resource.Instantiate("UI/Chatting", _chatContent.transform);
-            textGo.GetComponent<TMP_Text>().text = msg;
-        }
-    }
-
-    internal void Push(string msg)
-    {
-        if (chat.Count >= _maxSize)
-            chat.RemoveAt(chat.Count - 1);
-
-        chat.Insert(0, msg);
     }
 }
