@@ -43,10 +43,12 @@ public class Type
         C2S_PLAYERSTATINFO,
         S2C_PLAYERSTATINFO,
         C2S_UPSTAT,
+        C2S_LOGIN,
+        S2C_LOGIN,
     }
     public static string IP { get { return "58.236.130.58"; } }
-    public static int PORT { get { return 30002; } }
-
+    public static int FieldPORT { get { return 30002; } }
+    public static int LoginPort { get { return 30003; } }
     public enum State : UInt16
     {
         IDLE,
@@ -89,6 +91,12 @@ public class Type
         Bear,
         Skeleton,
         Thief
+    }
+
+    public enum ServerType : Int32 
+    {
+        Login,
+        Field
     }
 }
 

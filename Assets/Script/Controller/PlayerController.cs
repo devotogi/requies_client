@@ -260,7 +260,7 @@ public class PlayerController : PlayController
         BinaryWriter bw = new BinaryWriter(ms);
         bw.Write((Int16)Type.PacketProtocol.C2S_PLAYERSTATINFO);
         bw.Write((Int16)4);
-        _network.SendPacket(bytes, 4);
+        _network.SendPacket(bytes, 4, Type.ServerType.Field);
     }
 
     public override void SetExp(int level, float exp, float expMax)
@@ -465,7 +465,7 @@ public class PlayerController : PlayController
         bw.Write((float)transform.localRotation.z);
         bw.Write((float)transform.localRotation.w);
 
-        _network.SendPacket(bytes, 74);
+        _network.SendPacket(bytes, 74, Type.ServerType.Field);
         _movePacketCnt++;
     }
 
@@ -503,7 +503,7 @@ public class PlayerController : PlayController
         bw.Write((float)transform.localRotation.z);
         bw.Write((float)transform.localRotation.w);
 
-        _network.SendPacket(bytes, 74);
+        _network.SendPacket(bytes, 74, Type.ServerType.Field);
     }
     public override void MouseMove_Update_Input()
     {
@@ -623,7 +623,7 @@ public class PlayerController : PlayController
                 bw.Write((Int16)12);
                 bw.Write((Int32)otherPlayerId);
                 bw.Write((Int32)_damage);
-                _network.SendPacket(bytes, 12);
+                _network.SendPacket(bytes, 12, Type.ServerType.Field);
             }
             else if (targetLayer == 15)
             {
@@ -646,7 +646,7 @@ public class PlayerController : PlayController
                 bw.Write((float)y);
                 bw.Write((float)z);
                 bw.Write((Int32)_damage);
-                _network.SendPacket(bytes, 24);
+                _network.SendPacket(bytes, 24, Type.ServerType.Field);
             }
         }
 
@@ -678,7 +678,7 @@ public class PlayerController : PlayController
         BinaryWriter bw = new BinaryWriter(ms);
         bw.Write((Int16)Type.PacketProtocol.C2S_PLAYERESPAWN);
         bw.Write((Int16)4);
-        _network.SendPacket(bytes, 4);
+        _network.SendPacket(bytes, 4, Type.ServerType.Field);
 
     }
 

@@ -9,8 +9,13 @@ using UnityEngine;
 
 public class Network : MonoBehaviour
 {
-    private TCPConnector _connector = new TCPConnector();
-    private Thread _tcpThread;
+    private TCPConnector _filedConnector = new TCPConnector();
+    private Thread _filedThread;
+
+    private TCPConnector _loginConnector = new TCPConnector();
+    private Thread _loginThread;
+
+
     private PacketHandler _packetHandler = new PacketHandler();
 
     private const int _recvBufferSize = 4096 * 5;
@@ -41,18 +46,41 @@ public class Network : MonoBehaviour
 
     }
 
-    void Init()
+    void LoginServerConnect() 
     {
-        if (_connector.ConnectTo(Type.IP, Type.PORT))
+        if (_loginConnector.ConnectTo(Type.IP, Type.LoginPort))
         {
-            _tcpThread = new Thread(new ThreadStart(TCPRecvProc));
-            _tcpThread.Start();
+            _loginThread = new Thread(new ThreadStart(Login_TCPRecvProc));
+            _loginThread.Start();
         }
     }
 
-    public void SendPacket(byte[] buffer, int sendSize)
+    void FiledServerConnect() 
     {
-        _connector.ConnectSocket.Send(buffer, sendSize, SocketFlags.None);
+        if (_filedConnector.ConnectTo(Type.IP, Type.FieldPORT))
+        {
+            _filedThread = new Thread(new ThreadStart(Filed_TCPRecvProc));
+            _filedThread.Start();
+        }
+    }
+
+    void Init()
+    {
+        LoginServerConnect();
+    }
+
+    public void SendPacket(byte[] buffer, int sendSize, Type.ServerType serverType)
+    {
+        switch (serverType)
+        {
+            case Type.ServerType.Login:
+                _loginConnector.ConnectSocket.Send(buffer, sendSize, SocketFlags.None);
+                break;
+
+            case Type.ServerType.Field:
+                _filedConnector.ConnectSocket.Send(buffer, sendSize, SocketFlags.None);
+                break;
+        }
     }
 
     void Update()
@@ -71,7 +99,7 @@ public class Network : MonoBehaviour
         }
     }
 
-    private void TCPRecvProc()
+    private void Login_TCPRecvProc()
     {
         int recvSize = 0;
         int readPos = 0;
@@ -80,11 +108,75 @@ public class Network : MonoBehaviour
         {
             while (true)
             {
-                recvSize = _connector.ConnectSocket.Receive(_recvBuffer, writePos, _recvBuffer.Length - writePos, SocketFlags.None);
+                recvSize = _loginConnector.ConnectSocket.Receive(_recvBuffer, writePos, _recvBuffer.Length - writePos, SocketFlags.None);
 
                 if (recvSize < 1)
                 {
-                    _connector.ConnectSocket.Close();
+                    _loginConnector.ConnectSocket.Close();
+                    break;
+                }
+
+                writePos += recvSize;
+                // [200][100][200][100]
+                while (true)
+                {
+                    int dataSize = Math.Abs(writePos - readPos);
+
+                    if (dataSize < 4) break;
+
+                    ArraySegment<byte> pktCodeByte = new ArraySegment<byte>(_recvBuffer, readPos, readPos + sizeof(UInt16));
+                    ArraySegment<byte> pktSizeByte = new ArraySegment<byte>(_recvBuffer, readPos + sizeof(UInt16), readPos + sizeof(UInt16));
+
+                    Int16 pktCode = BitConverter.ToInt16(pktCodeByte);
+                    Int16 pktSize = BitConverter.ToInt16(pktSizeByte);
+
+                    if (pktSize > dataSize)
+                        break;
+
+                    ArraySegment<byte> segment = new ArraySegment<byte>(_recvBuffer, readPos, pktSize);
+                    byte[] data = new byte[pktSize];
+
+                    Array.Copy(segment.ToArray(), data, pktSize);
+
+                    PacketQueue.Instance.Push(data);
+
+                    // TODO 데이터 처리
+                    readPos += pktSize;
+
+                    if (readPos == writePos)
+                    {
+                        readPos = 0;
+                        writePos = 0;
+                    }
+                    else if (writePos >= 4096 * 4)
+                    {
+                        Buffer.BlockCopy(_recvBuffer, readPos, _recvBuffer, 0, dataSize);
+                        writePos = dataSize;
+                    }
+
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+        }
+    }
+
+    private void Filed_TCPRecvProc()
+    {
+        int recvSize = 0;
+        int readPos = 0;
+        int writePos = 0;
+        try
+        {
+            while (true)
+            {
+                recvSize = _filedConnector.ConnectSocket.Receive(_recvBuffer, writePos, _recvBuffer.Length - writePos, SocketFlags.None);
+
+                if (recvSize < 1)
+                {
+                    _filedConnector.ConnectSocket.Close();
                     break;
                 }
 

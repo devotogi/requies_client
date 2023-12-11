@@ -56,7 +56,7 @@ public class ChatInputController : MonoBehaviour
             bw.Write((Int32)selectedIndex);
             bw.Write((Int32)msgSize);
             bw.Write(chattingBytes);
-            _network.SendPacket(bytes, pktSize);
+            _network.SendPacket(bytes, pktSize, Type.ServerType.Field);
             _text.text = "";
         }
     }

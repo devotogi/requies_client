@@ -54,7 +54,7 @@ public class StatInfoController : MonoBehaviour
         bw.Write((Int16)Type.PacketProtocol.C2S_UPSTAT);
         bw.Write((Int16)8);
         bw.Write((Int32)type); // 0 Attack, 1 Speed, 2 Defense
-        _network.SendPacket(bytes, 8);
+        _network.SendPacket(bytes, 8, Type.ServerType.Field);
     }
 
     void RefreshRender() 

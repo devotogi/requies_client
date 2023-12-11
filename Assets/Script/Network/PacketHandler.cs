@@ -112,6 +112,32 @@ public class PacketHandler
             case Type.PacketProtocol.S2C_PLAYERSTATINFO:
                 PacketHandler_S2C_PLAYERSTATINFO(dataPtr, dataSize);
                 break;
+
+            case Type.PacketProtocol.S2C_LOGIN:
+                PacketHandler_S2C_LOGIN(dataPtr, dataSize);
+                break;
+        }
+    }
+
+    private void PacketHandler_S2C_LOGIN(ArraySegment<byte> dataPtr, int dataSize)
+    {
+        MemoryStream ms = new MemoryStream(dataPtr.Array, dataPtr.Offset, dataPtr.Count);
+        BinaryReader br = new BinaryReader(ms);
+        int check = br.ReadInt32();
+
+        GameObject login = GameObject.Find("Login");
+        LoginController lc = login.GetComponent<LoginController>();
+
+        if (check == 9999)
+        {
+            lc.SetAlert(true);
+            lc.SetAlertMsg("로그인 성공");
+        }
+        else 
+        {
+            // 로그인 실패
+            lc.SetAlert(true);
+            lc.SetAlertMsg("아이디 또는 패스워드가 일치하지 않습니다");
         }
     }
 

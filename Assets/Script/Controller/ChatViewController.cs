@@ -49,11 +49,11 @@ public class ChatViewController : MonoBehaviour
         {
             foreach (var msg in chat)
             {
-                if (msg.chatType == 0) continue;
+                if (msg.chatType == 1) continue;
 
                 GameObject textGo = Managers.Resource.Instantiate("UI/Chatting", transform);
                 textGo.GetComponent<TMP_Text>().text = msg.msg;
-                textGo.GetComponent<TMP_Text>().color = Color.red;
+                textGo.GetComponent<TMP_Text>().color = Color.green;
             }
         }
     }

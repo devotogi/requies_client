@@ -17,15 +17,14 @@ public class SceneManager : MonoBehaviour
             case Type.SceneType.Debug:
                 Managers.Resource.Instantiate("Object/MapMaker");
                 Managers.Resource.Instantiate("Camera/DevCamera");
-
                 break;
 
             case Type.SceneType.Run:
                 GameObject network = new GameObject();
                 network.name = "Network";
                 network.AddComponent<Network>();
-
-                Managers.Resource.Instantiate("UI/PlayerUI");
+                DontDestroyOnLoad(network);
+                // Managers.Resource.Instantiate("UI/PlayerUI");
 
                 //for (int z = 0; z <= 256; z += 32)
                 //{
@@ -38,8 +37,6 @@ public class SceneManager : MonoBehaviour
                 //        goz.transform.position = new Vector3(z, 0, x);
                 //    }
                 //}
-
-
                 break;
         }
     }
