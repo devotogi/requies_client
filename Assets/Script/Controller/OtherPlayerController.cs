@@ -29,6 +29,18 @@ public class OtherPlayerController : PlayController
                 _talk.transform.LookAt(dir);
             }
         }
+
+        if (_usernameText != null)
+        {
+            _usernameText.transform.position = transform.position + (Vector3.up * 2.0f);
+            Camera camera = Camera.main;
+
+            if (camera != null)
+            {
+                _usernameText.transform.LookAt(camera.transform);
+                _usernameText.transform.Rotate(0, 180, 0);
+            }
+        }
     }
 
     public override void CInit()
@@ -39,11 +51,10 @@ public class OtherPlayerController : PlayController
         _agent.enabled = true;
     }
 
-    public void Init(Quaternion cameraLocalRotation, GameObject camera, HpController hpc)
+    public void Init(Quaternion cameraLocalRotation, GameObject camera)
     {
         _camera = camera;
         _cameraLocalRotation = cameraLocalRotation;
-        _hpController = hpc;
     }
     public override void KeyBoardMove_Update_IDLE()
     {
@@ -197,16 +208,21 @@ public class OtherPlayerController : PlayController
         _mouseDir = mouseDir;
         _state = state;
         _dir = dir;
-        GetComponent<UnityEngine.AI.NavMeshAgent>().Warp(new Vector3(nowPos.x, nowPos.y, nowPos.z));
-        _cameraLocalRotation = quaternion;
-        _camera.transform.localRotation = _cameraLocalRotation;
-        transform.localRotation = localRotation;
         _target = target;
-
+        GetComponent<UnityEngine.AI.NavMeshAgent>().Warp(new Vector3(nowPos.x, nowPos.y, nowPos.z));
+        if (_moveType == Type.MoveType.KeyBoard)
+        {
+            _cameraLocalRotation = quaternion;
+            _camera.transform.localRotation = _cameraLocalRotation;
+            transform.localRotation = localRotation;
+        }
+        
         if (_moveType == Type.MoveType.Mouse && _state == Type.State.MOVE)
         {
             Vector3 dest = new Vector3(_target.x, transform.position.y, _target.z);
-            transform.LookAt(dest);
+
+            if (dest != Vector3.zero)
+                transform.LookAt(dest);
         }
     }
 
@@ -242,6 +258,12 @@ public class OtherPlayerController : PlayController
         base.Destory();
         if (_hpController)
             Managers.Resource.Destory(_hpController.gameObject);
+
+        if (_usernameText)
+            Managers.Resource.Destory(_usernameText.transform.parent.gameObject);
+
+        if (_talk)
+            Managers.Resource.Destory(_talk.gameObject);
     }
 
     public override void SetHp(float hp)

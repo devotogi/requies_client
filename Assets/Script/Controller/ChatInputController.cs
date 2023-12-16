@@ -42,6 +42,9 @@ public class ChatInputController : MonoBehaviour
             if (chatting.Trim().Length == 0)
                 return;
 
+            string username = Managers.Data.PlayerController.GetUserName();
+            chatting = $"{username}:{chatting}";
+
             byte[] bytes = new byte[1000];
             MemoryStream ms = new MemoryStream(bytes);
             ms.Position = 0;
@@ -56,7 +59,7 @@ public class ChatInputController : MonoBehaviour
             bw.Write((Int32)selectedIndex);
             bw.Write((Int32)msgSize);
             bw.Write(chattingBytes);
-            _network.SendPacket(bytes, pktSize, Type.ServerType.Field);
+            _network.SendPacket(bytes, pktSize, Type.ServerPort.FieldPort);
             _text.text = "";
         }
     }

@@ -22,6 +22,8 @@ public class PlayController : CreatureController
     protected bool _death = false;
     protected GameObject _talk;
     protected bool _attackedCoolTime = false;
+    protected string _userName = "";
+    protected TMP_Text _usernameText = null;
 
     private void OnDestroy()
     {
@@ -179,5 +181,18 @@ public class PlayController : CreatureController
     public virtual void SetMpMax(float mpMax)
     {
 
+    }
+
+    public void SetUserName(string userName) 
+    {
+        GameObject go = Managers.Resource.Instantiate("UI/Username");
+        _usernameText = go.transform.GetChild(0).GetComponent<TMP_Text>();
+        _userName = userName;
+        _usernameText.text = userName;
+    }
+
+    public string GetUserName() 
+    {
+        return _userName;
     }
 }

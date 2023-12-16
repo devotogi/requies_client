@@ -58,7 +58,7 @@ public class MonsterController : CreatureController
         _dest = dest; 
         SetHp(hp);
         _conner = conner;
-
+       
         switch (_monsterType) 
         {
             case Type.MonsterType.Bear:
@@ -85,18 +85,18 @@ public class MonsterController : CreatureController
         transform.rotation = Quaternion.LookRotation(_dir).normalized;
         transform.position += (_dir * Time.deltaTime * _speed);
 
-
         Vector3 dest = new Vector3(_conner[0].x + 0.5f, 0, _conner[0].y + 0.5f);
         Vector3 destV= dest - transform.position;
         _dir = destV.normalized;
         float distF = destV.magnitude;
+        float moveDist = _speed * Time.deltaTime;
 
-        if (distF <= 0.02)
+        if (distF < moveDist) 
         {
             transform.position = dest;
             _conner.RemoveAt(0);
 
-            if (_conner.Count == 0) 
+            if (_conner.Count == 0)
                 _state = Type.State.IDLE;
         }
     }

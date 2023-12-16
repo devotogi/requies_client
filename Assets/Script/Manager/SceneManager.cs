@@ -24,7 +24,6 @@ public class SceneManager : MonoBehaviour
                 network.name = "Network";
                 network.AddComponent<Network>();
                 DontDestroyOnLoad(network);
-                // Managers.Resource.Instantiate("UI/PlayerUI");
 
                 //for (int z = 0; z <= 256; z += 32)
                 //{

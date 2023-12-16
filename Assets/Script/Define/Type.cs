@@ -49,6 +49,12 @@ public class Type
     public static string IP { get { return "58.236.130.58"; } }
     public static int FieldPORT { get { return 30002; } }
     public static int LoginPort { get { return 30003; } }
+
+    public enum ServerPort : UInt16 
+    {
+        FieldPort = 30002,
+        LoginPort = 30003,
+    }
     public enum State : UInt16
     {
         IDLE,

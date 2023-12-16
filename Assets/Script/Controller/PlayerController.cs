@@ -38,8 +38,19 @@ public class PlayerController : PlayController
             { 
                 _talk.transform.LookAt(camera.transform);
             }
+        }
 
-        } 
+        if (_usernameText != null)
+        {
+            _usernameText.transform.position = transform.position + (Vector3.up * 2.0f);
+            Camera camera = Camera.main;
+
+            if (camera != null)
+            {
+                _usernameText.transform.LookAt(camera.transform);
+                _usernameText.transform.Rotate(0, 180, 0);
+            }
+        }
     }
 
     void OnDrawGizmos()
@@ -85,7 +96,6 @@ public class PlayerController : PlayController
         _agent.updateRotation = false;
         _agent.enabled = true;
         GameObject playerUi = GameObject.Find("PlayerUI(Clone)");
-
         _hpMpController = GameObject.FindGameObjectWithTag("HpMp").GetComponent<HpMpController>();
         _expController = playerUi.transform.GetChild(1).GetComponent<ExpController>();
         _expController.Init();
@@ -260,7 +270,7 @@ public class PlayerController : PlayController
         BinaryWriter bw = new BinaryWriter(ms);
         bw.Write((Int16)Type.PacketProtocol.C2S_PLAYERSTATINFO);
         bw.Write((Int16)4);
-        _network.SendPacket(bytes, 4, Type.ServerType.Field);
+        _network.SendPacket(bytes, 4, Type.ServerPort.FieldPort);
     }
 
     public override void SetExp(int level, float exp, float expMax)
@@ -465,7 +475,7 @@ public class PlayerController : PlayController
         bw.Write((float)transform.localRotation.z);
         bw.Write((float)transform.localRotation.w);
 
-        _network.SendPacket(bytes, 74, Type.ServerType.Field);
+        _network.SendPacket(bytes, 74, Type.ServerPort.FieldPort);
         _movePacketCnt++;
     }
 
@@ -503,7 +513,7 @@ public class PlayerController : PlayController
         bw.Write((float)transform.localRotation.z);
         bw.Write((float)transform.localRotation.w);
 
-        _network.SendPacket(bytes, 74, Type.ServerType.Field);
+        _network.SendPacket(bytes, 74, Type.ServerPort.FieldPort);
     }
     public override void MouseMove_Update_Input()
     {
@@ -623,7 +633,7 @@ public class PlayerController : PlayController
                 bw.Write((Int16)12);
                 bw.Write((Int32)otherPlayerId);
                 bw.Write((Int32)_damage);
-                _network.SendPacket(bytes, 12, Type.ServerType.Field);
+                _network.SendPacket(bytes, 12, Type.ServerPort.FieldPort);
             }
             else if (targetLayer == 15)
             {
@@ -646,7 +656,7 @@ public class PlayerController : PlayController
                 bw.Write((float)y);
                 bw.Write((float)z);
                 bw.Write((Int32)_damage);
-                _network.SendPacket(bytes, 24, Type.ServerType.Field);
+                _network.SendPacket(bytes, 24, Type.ServerPort.FieldPort);
             }
         }
 
@@ -678,7 +688,7 @@ public class PlayerController : PlayController
         BinaryWriter bw = new BinaryWriter(ms);
         bw.Write((Int16)Type.PacketProtocol.C2S_PLAYERESPAWN);
         bw.Write((Int16)4);
-        _network.SendPacket(bytes, 4, Type.ServerType.Field);
+        _network.SendPacket(bytes, 4, Type.ServerPort.FieldPort);
 
     }
 

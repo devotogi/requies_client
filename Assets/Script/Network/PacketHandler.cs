@@ -124,14 +124,26 @@ public class PacketHandler
         MemoryStream ms = new MemoryStream(dataPtr.Array, dataPtr.Offset, dataPtr.Count);
         BinaryReader br = new BinaryReader(ms);
         int check = br.ReadInt32();
+        int userSQ = br.ReadInt32();
+        int serverPort = br.ReadInt32();
 
         GameObject login = GameObject.Find("Login");
         LoginController lc = login.GetComponent<LoginController>();
 
         if (check == 9999)
         {
-            lc.SetAlert(true);
-            lc.SetAlertMsg("로그인 성공");
+            //lc.SetAlert(true);
+            //lc.SetAlertMsg("로그인 성공");
+            try
+            {
+                Managers.Data.userSQ = userSQ;
+                Managers.Data.Network.ServerConnect((Type.ServerPort)serverPort);
+
+                LoadingSceneController.Instance.LoadScene("MapScene");
+
+                // UnityEngine.SceneManagement.SceneManager.LoadScene("MapScene");
+            }
+            catch (Exception e) { Debug.LogError(e); }
         }
         else 
         {
@@ -550,16 +562,17 @@ public class PacketHandler
         int msgSize = br.ReadInt32();
         byte[] msgBytes = br.ReadBytes(msgSize);
         string msg = Encoding.Unicode.GetString(msgBytes);
+        int userNameIndex = msg.IndexOf(":");
 
         if (Managers.Data.PlayerController.PlayerID == playerId)
         {
-            Managers.Data.PlayerController.Talk(msg);
+            Managers.Data.PlayerController.Talk(msg.Substring(userNameIndex + 1));
         }
         else
         {
             Managers.Data.PlayerDic.TryGetValue(playerId, out var opc);
             if (opc != null)
-                opc.Talk(msg);
+                opc.Talk(msg.Substring(userNameIndex + 1));
         }
 
 
@@ -667,6 +680,9 @@ public class PacketHandler
             float hp = br.ReadSingle();
             float mp = br.ReadSingle();
             int level = br.ReadInt32();
+            int usernameSIze = br.ReadInt32();
+            byte[] usernameBytes = br.ReadBytes(usernameSIze);
+            string username = Encoding.Unicode.GetString(usernameBytes);
 
             GameObject playerGo = Managers.Resource.Instantiate("Player/Knight");
             playerGo.name = $"otherPlayer{playerId}";
@@ -678,16 +694,15 @@ public class PacketHandler
 
             GameObject cameraPosGo = Managers.Resource.Instantiate("Camera/FakeCameraPos");
             cameraPosGo.GetComponent<FakeCameraPos>().Init(playerGo);
-            GameObject hpObject = Managers.Resource.Instantiate("UI/HP");
-            HpController hpc = hpObject.GetComponent<HpController>();
 
-            opc.Init(quaternion, cameraPosGo.transform.GetChild(0).gameObject, hpc);
+            opc.Init(quaternion, cameraPosGo.transform.GetChild(0).gameObject);
             opc.UpdateSync(moveType, state, dir, mouseDir, nowPos, quaternion, target, localRotation);
             opc.SetHpMax(hpMax);
             opc.SetHpMax(mpMax);
             opc.SetHp(hp);
             opc.SetMp(mp);
             opc.SetLevel(level);
+            opc.SetUserName(username);
         }
         catch (Exception e)
         {
@@ -749,6 +764,10 @@ public class PacketHandler
             float mp = br.ReadSingle();
             int playerLevel = br.ReadInt32();
 
+            int usernameSIze = br.ReadInt32();
+            byte[] usernameBytes = br.ReadBytes(usernameSIze);
+            string username = Encoding.Unicode.GetString(usernameBytes);
+
             if (playerId == Managers.Data.PlayerController.PlayerID)
                 continue;
 
@@ -770,16 +789,15 @@ public class PacketHandler
             GameObject hpObject = Managers.Resource.Instantiate("UI/HP");
 
             GameObject cameraPosGo = Managers.Resource.Instantiate("Camera/FakeCameraPos");
-            cameraPosGo.GetComponent<FakeCameraPos>().Init(playerGo);
+            cameraPosGo.GetComponent<FakeCameraPos>().Init(playerGo);;
 
-            HpController hpc = hpObject.GetComponent<HpController>();
-
-            opc.Init(cameraLocalRotation, cameraPosGo.transform.GetChild(0).gameObject, hpc);
+            opc.Init(cameraLocalRotation, cameraPosGo.transform.GetChild(0).gameObject);
             opc.UpdateSync(moveType, state, dir, mouseDir,startPos, cameraLocalRotation, target, localRotation);
             opc.SetHpMax(hpMax);
             opc.SetHpMax(mpMax);
             opc.SetHp(hp);
             opc.SetMp(mp);
+            opc.SetUserName(username);
         }
     }
 
@@ -836,7 +854,6 @@ public class PacketHandler
     {
         MemoryStream ms = new MemoryStream(dataPtr.Array, dataPtr.Offset, dataPtr.Count);
         BinaryReader br = new BinaryReader(ms);
-
         Int32 playerId = br.ReadInt32();
         Type.State state = (Type.State)br.ReadUInt16();
         Type.Dir dir = (Type.Dir)br.ReadUInt16();
@@ -857,6 +874,9 @@ public class PacketHandler
         float mpMax = br.ReadSingle();
         float speed = br.ReadSingle();
         float damage = br.ReadSingle();
+        int userNameSize = br.ReadInt32();
+        byte[] userNameBytes = br.ReadBytes(userNameSize);
+        string username = Encoding.Unicode.GetString(userNameBytes);
 
         GameObject playerGo = Managers.Resource.Instantiate("Player/Knight");
         playerGo.name = "player";
@@ -870,6 +890,8 @@ public class PacketHandler
         pc.SetLevel(level);
         pc.SetSpeed(speed);
         pc.SetDamage(damage);
+        pc.SetUserName(username);
+
         Managers.Data.PlayerController = pc;
         Managers.Data.PlayerDic.Add(pc.PlayerID, pc);
 
